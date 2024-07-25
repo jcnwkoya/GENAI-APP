@@ -1,0 +1,12 @@
+{
+  "version": "2.0",
+  "app_name": "genai-user-app",
+  "stages": {
+    "prd": {
+      "api_gateway_stage": "prd"
+    },
+    "dev": {
+      "api_gateway_stage": "dev"
+    }
+  }
+}
