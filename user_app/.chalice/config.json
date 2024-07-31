@@ -5,8 +5,8 @@
     "prd": {
       "api_gateway_stage": "prd"
     },
-    "dev": {
-      "api_gateway_stage": "dev"
+    "poc": {
+      "api_gateway_stage": "poc"
     }
   }
 }

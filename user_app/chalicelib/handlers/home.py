@@ -17,10 +17,44 @@ def home_page():
                     font-weight: bold;
                 }}
             </style>
+            <script src="./assets/jquery-3.7.1.min.js"></script>
+            <link rel="stylesheet" href="./assets/datatables.css">
+            <link rel="stylesheet" href="./assets/select.dataTables.css">
+            <script src="./assets/datatables.js"></script>
+            <script src="./assets/dataTables.select.js"></script>
         </head>
         <body>
             <h1>Gen AI App Viewer</h1>
             {f'<p class="error">Error: {error_message}</p>' if error_message else ''}
+            <section>
+                <table id="mmDataTable" class="stripe row-border order-column nowrap">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>No.</th>
+                            <th>測定日時</th>
+                            <th>測定メニュー</th>
+                            <th>測定モード</th>
+                            <th>測定コード</th>
+                            <th>日本語名</th>
+                        </tr>
+                    </thead>
+                </table>
+            </section>
+            <section>
+                <table id="mmSummaryTable" class="stripe row-border order-column nowrap">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>No.</th>
+                            <th>測定コード</th>
+                            <th>日本語名</th>
+                            <th>出現回数</th>
+                        </tr>
+                    </thead>
+                </table>
+            </section>
+            <script src="./assets/main.js"></script>
         </body>
     </html>
     """

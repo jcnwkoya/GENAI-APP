@@ -6,20 +6,9 @@ logger = getLogger(__name__)
 
 extra_routes = Blueprint(__name__)
 
-@extra_routes.route('/login', methods=['GET'])
-def login_page0():
-    request = extra_routes.current_request
-    if request.method == 'POST':
-        return post_login(request)
-    elif request.method == 'GET':
-        return get_login(request)
-
 @extra_routes.route('/login', methods=['POST'], content_types=['application/x-www-form-urlencoded'], cors=True)
-def login_page1():
-    request = extra_routes.current_request
-    return post_login(request)
-
-def post_login(req):
+def post_login():
+    req = extra_routes.current_request
     body = parse_qs(req.raw_body.decode('utf-8'))
     username = body.get('username', [''])[0]
     password = body.get('password', [''])[0]
@@ -31,7 +20,9 @@ def post_login(req):
 
     return Response(body='', status_code=302, headers={'Location': location})
 
-def get_login(req):
+@extra_routes.route('/login', methods=['GET'])
+def get_login():
+    req = extra_routes.current_request
     error_message = req.query_params.get('error') if req.query_params else None
 
     html = f"""
