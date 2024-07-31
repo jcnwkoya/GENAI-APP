@@ -1,0 +1,22 @@
+<html>
+    <head>
+        <title>ログイン</title>
+        <style>
+            .error {
+                color: red;
+                font-weight: bold;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>ログイン</h1>
+        {% if error_message %}
+            <p class="error">Error: {{ error_message }}</p>
+        {% endif %}
+        <form method="post">
+            <input type="text" name="username" placeholder="ユーザー名" required>
+            <input type="password" name="password" placeholder="パスワード" required>
+            <input type="submit" value="ログイン">
+        </form>
+    </body>
+</html>

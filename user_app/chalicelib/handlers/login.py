@@ -1,6 +1,7 @@
 from chalice import Blueprint, Response
 from urllib.parse import parse_qs
 from logging import getLogger
+from ..template import render_template
 
 logger = getLogger(__name__)
 
@@ -25,26 +26,6 @@ def get_login():
     req = extra_routes.current_request
     error_message = req.query_params.get('error') if req.query_params else None
 
-    html = f"""
-    <html>
-        <head>
-            <title>ログイン</title>
-            <style>
-                .error {{
-                    color: red;
-                    font-weight: bold;
-                }}
-            </style>
-        </head>
-        <body>
-            <h1>ログイン</h1>
-            {f'<p class="error">Error: {error_message}</p>' if error_message else ''}
-            <form method="post">
-                <input type="text" name="username" placeholder="ユーザー名" required>
-                <input type="password" name="password" placeholder="パスワード" required>
-                <input type="submit" value="ログイン">
-            </form>
-        </body>
-    </html>
-    """
+    html = render_template('login.html', error_message=error_message)
+
     return Response(body=html, status_code=200, headers={'Content-Type': 'text/html;charset=utf-8'})
