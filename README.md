@@ -21,3 +21,7 @@ Visual Studio Code のターミナルを開いて、 `python -m venv .venv` を�
 ## 依存ライブラリのインストール
 
 Visual Studio Code のターミナルを開いて、 `poetry install` を実行する。
+
+## requirements.txt 出力用 Poetry プラグインのインストール
+
+Visual Studio Code のターミナルを開いて、 `poetry self add poetry-plugin-export` を実行する。

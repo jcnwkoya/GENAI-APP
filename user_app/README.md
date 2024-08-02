@@ -7,8 +7,16 @@ $ cd user-app
 $ chalice local
 ```
 
-## ステージ dev のデプロイ
+## ステージ poc のデプロイ
+
+## Chalice 用に requirements.txt を出力
 
 ```
-$ chalice deploy --stage dev
+$ poetry export --format requirements.txt --output requirements.txt
+```
+
+## デプロイ実行
+
+```
+$ chalice deploy --stage poc
 ```
