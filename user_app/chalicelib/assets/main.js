@@ -10,11 +10,13 @@ const mmDataTable = new DataTable('#mmDataTable', {
     fixedColumns: {
         start: 2
     },
+    info: false,
     order: [[1, 'asc']],
     paging: false,
     scrollCollapse: true,
     scrollX: true,
     scrollY: 300,
+    searching: false,
     select: {
         style: 'multi',
         selector: 'td:first-child'
@@ -33,11 +35,13 @@ const mmSummaryTable = new DataTable('#mmSummaryTable', {
     fixedColumns: {
         start: 2
     },
+    info: false,
     order: [[1, 'asc']],
     paging: false,
     scrollCollapse: true,
     scrollX: true,
     scrollY: 300,
+    searching: false,
     select: {
         style: 'multi',
         selector: 'td:first-child'
