@@ -1,6 +1,9 @@
 from chalice import Blueprint, Response
 from urllib.parse import parse_qs
 from logging import getLogger
+
+from ..auth import authenticate
+from ..util import path_resolve
 from ..template import render_template
 
 logger = getLogger(__name__)
@@ -14,12 +17,19 @@ def post_login():
     username = body.get('username', [''])[0]
     password = body.get('password', [''])[0]
 
-    if username == 'admin' and password == 'password':
-        location = '/'
+    if authenticate(username, password):
+        session_token = 'abcdef'
+        return Response(
+            body='',
+            status_code=302,  # 302 Found for redirection
+            headers={
+                'Location': path_resolve('/'),
+                'Set-Cookie': f'session={session_token}; HttpOnly; Secure; SameSite=Strict; Path=/',
+            }
+        )
     else:
-        location = '/login?error=Invalid+username+or+password'
+        return Response(body='', status_code=302, headers={'Location': path_resolve('/login?error=Invalid+username+or+password')})
 
-    return Response(body='', status_code=302, headers={'Location': location})
 
 @extra_routes.route('/login', methods=['GET'])
 def get_login():
