@@ -3,10 +3,16 @@
   "app_name": "genai-user-app",
   "stages": {
     "prd": {
-      "api_gateway_stage": "prd"
+      "api_gateway_stage": "prd",
+      "environment_variables": {
+        "PATH_PREFIX": ""
+      }
     },
     "poc": {
-      "api_gateway_stage": "poc"
+      "api_gateway_stage": "poc",
+      "environment_variables": {
+        "PATH_PREFIX": "/poc"
+      }
     }
   }
 }
