@@ -4,12 +4,14 @@
   "stages": {
     "prd": {
       "api_gateway_stage": "prd",
+      "autogen_policy": false,
       "environment_variables": {
         "PATH_PREFIX": ""
       }
     },
     "poc": {
       "api_gateway_stage": "poc",
+      "autogen_policy": false,
       "environment_variables": {
         "PATH_PREFIX": "/poc"
       }
