@@ -150,59 +150,61 @@
         </table>
       </section>
       <div>
-        <fieldset>
-          <legend>生成条件</legend>
-          <div class="row">
-            <div class="max">
-              <div class="field label suffix border">
-                <select name="msgtype">
-                  <option>スピリチュアル</option>
-                  <option>フロイト心理学</option>
-                  <option>ユング心理学</option>
-                  <option>アドラー心理学</option>
-                  <option>占星術</option>
-                  <option>禅宗</option>
-                </select>
-                <label>メッセージタイプ</label>
-                <i>arrow_drop_down</i>
+        <form id="messageForm">
+          <fieldset>
+            <legend>生成条件</legend>
+            <div class="row">
+              <div class="max">
+                <div class="field label suffix border">
+                  <select name="msgtype">
+                    <option>スピリチュアル</option>
+                    <option>フロイト心理学</option>
+                    <option>ユング心理学</option>
+                    <option>アドラー心理学</option>
+                    <option>占星術</option>
+                    <option>禅宗</option>
+                  </select>
+                  <label>メッセージタイプ</label>
+                  <i>arrow_drop_down</i>
+                </div>
+              </div>
+              <div class="max">
+                <div class="field label suffix border">
+                  <select name="ai">
+                    <option value="bedrock-claude3-haiku">
+                      Claude 3 Haiku
+                    </option>
+                    <option>Mistral</option>
+                    <option>Llama</option>
+                  </select>
+                  <label>AI モデル</label>
+                  <i>arrow_drop_down</i>
+                </div>
+              </div>
+              <div class="max">
+                <div class="field middle-align">
+                  <nav>
+                    <label class="radio">
+                      <input type="radio" name="msglen" value="short" checked />
+                      <span>一言（50文字）</span>
+                    </label>
+                    <label class="radio">
+                      <input type="radio" name="msglen" value="medium" />
+                      <span>短文（200文字）</span>
+                    </label>
+                    <label class="radio">
+                      <input type="radio" name="msglen" value="long" />
+                      <span>長文（400文字）</span>
+                    </label>
+                  </nav>
+                </div>
               </div>
             </div>
-            <div class="max">
-              <div class="field label suffix border">
-                <select name="ai">
-                  <option>Mistral</option>
-                  <option>Llama</option>
-                  <option>Claude</option>
-                </select>
-                <label>AI モデル</label>
-                <i>arrow_drop_down</i>
-              </div>
-            </div>
-            <div class="max">
-              <div class="field middle-align">
-                <nav>
-                  <label class="radio">
-                    <input type="radio" name="msglen" value="short" checked />
-                    <span>一言（50文字）</span>
-                  </label>
-                  <label class="radio">
-                    <input type="radio" name="msglen" value="medium" />
-                    <span>短文（200文字）</span>
-                  </label>
-                  <label class="radio">
-                    <input type="radio" name="msglen" value="long" />
-                    <span>長文（400文字）</span>
-                  </label>
-                </nav>
-              </div>
-            </div>
-          </div>
-        </fieldset>
-        <button id="generateMessageButton" class="small-round">
-          メッセージを生成
-        </button>
+          </fieldset>
+          <button type="submit" class="small-round">メッセージを生成</button>
+        </form>
         <div class="field textarea border large">
-          <textarea readonly></textarea>
+          <textarea id="messageTextArea" readonly></textarea>
         </div>
       </div>
     </main>

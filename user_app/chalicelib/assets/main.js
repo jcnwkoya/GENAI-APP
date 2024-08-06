@@ -181,6 +181,44 @@ function setupFilteringMmDataForm(codeTables, dataItems) {
     updateDateFieldsState(); // 初期化処理
 }
 
+function setupMessageForm() {
+    // メッセージ生成ボタンの処理
+    document.getElementById('messageForm').onsubmit = () => {
+        try {
+            const form = document.getElementById('messageForm');
+
+            const selectedRows = mmSummaryTable.rows('.selected').data();
+            const words = [];
+            for (let i = 0; i < selectedRows.length; i++) {
+                const word = codeTables.codes[selectedRows[i].mmCode];
+                words.push(word);
+            }
+    
+            const body = {
+                words: words,
+                ai: form.ai.value,
+                msgtype: form.msgtype.value,
+                msglen: form.msglen.value,
+            }
+    
+            fetch('./message', {
+                method: 'POST',
+                body: JSON.stringify(body),
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+            })
+            .then(res => res.json())
+            .then(({ message }) => {
+                document.getElementById('messageTextArea').value = message;
+            });
+        } catch (e) {
+            console.error(e);
+        }
+        return false;
+    };
+}
+
 function loadData(dataItems) {
     const mmDataItems = dataItems
         .filter(item => item.mmCode !== undefined)
@@ -213,9 +251,7 @@ function loadData(dataItems) {
 document.addEventListener('DOMContentLoaded', function() {
     setupFilteringMmDataForm(window.codeTables, window.deviceDataItems);
 
-    // メッセージ生成ボタンの処理
-    document.getElementById('generateMessageButton').onclick = () => {
-    };
+    setupMessageForm();
 
     // 初期ロード
     loadData(window.deviceDataItems);
