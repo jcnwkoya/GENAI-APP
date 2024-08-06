@@ -58,17 +58,14 @@
       {% endif %}
       <section>
         <h5>測定結果</h5>
-        <div>
+        <form id="filterForm">
           <fieldset>
             <legend>絞り込み条件</legend>
             <div class="row">
               <div class="max">
                 <div class="field label suffix border">
-                  <select>
-                    <option>すべて</option>
-                    <option>A</option>
-                    <option>B</option>
-                    <option>C</option>
+                  <select name="menu">
+                    <option value="all">すべて</option>
                   </select>
                   <label>測定メニュー</label>
                   <i>arrow_drop_down</i>
@@ -76,10 +73,8 @@
               </div>
               <div class="max">
                 <div class="field label suffix border">
-                  <select>
-                    <option>すべて</option>
-                    <option>エーテルモード</option>
-                    <option>アストラルモード</option>
+                  <select name="mode">
+                    <option value="all">すべて</option>
                   </select>
                   <label>測定モード</label>
                   <i>arrow_drop_down</i>
@@ -91,15 +86,15 @@
                 <div class="field middle-align">
                   <nav>
                     <label class="radio">
-                      <input type="radio" name="radio4_" />
+                      <input type="radio" name="period" value="all" checked />
                       <span>すべて</span>
                     </label>
                     <label class="radio">
-                      <input type="radio" name="radio4_" />
+                      <input type="radio" name="period" value="latest" />
                       <span>最新</span>
                     </label>
                     <label class="radio">
-                      <input type="radio" name="radio4_" />
+                      <input type="radio" name="period" value="range" />
                       <span>期間選択</span>
                     </label>
                   </nav>
@@ -109,20 +104,20 @@
             <div class="row">
               <div class="max">
                 <div class="field label border">
-                  <input type="date" />
+                  <input type="date" name="rangeStartDate" />
                   <label>期間（開始）</label>
                 </div>
               </div>
               <div class="max">
                 <div class="field label border">
-                  <input type="date" />
+                  <input type="date" name="rangeEndDate" />
                   <label>期間（終了）</label>
                 </div>
               </div>
             </div>
           </fieldset>
-          <button class="small-round">検索</button>
-        </div>
+          <button type="submit" class="small-round">検索</button>
+        </form>
         <table id="mmDataTable" class="stripe row-border order-column nowrap">
           <thead>
             <tr>
@@ -160,7 +155,7 @@
           <div class="row">
             <div class="max">
               <div class="field label suffix border">
-                <select>
+                <select name="msgtype">
                   <option>スピリチュアル</option>
                   <option>フロイト心理学</option>
                   <option>ユング心理学</option>
@@ -174,7 +169,7 @@
             </div>
             <div class="max">
               <div class="field label suffix border">
-                <select>
+                <select name="ai">
                   <option>Mistral</option>
                   <option>Llama</option>
                   <option>Claude</option>
@@ -183,9 +178,29 @@
                 <i>arrow_drop_down</i>
               </div>
             </div>
+            <div class="max">
+              <div class="field middle-align">
+                <nav>
+                  <label class="radio">
+                    <input type="radio" name="msglen" value="short" checked />
+                    <span>一言（50文字）</span>
+                  </label>
+                  <label class="radio">
+                    <input type="radio" name="msglen" value="medium" />
+                    <span>短文（200文字）</span>
+                  </label>
+                  <label class="radio">
+                    <input type="radio" name="msglen" value="long" />
+                    <span>長文（400文字）</span>
+                  </label>
+                </nav>
+              </div>
+            </div>
           </div>
         </fieldset>
-        <button class="small-round">メッセージを生成</button>
+        <button id="generateMessageButton" class="small-round">
+          メッセージを生成
+        </button>
         <div class="field textarea border large">
           <textarea readonly></textarea>
         </div>
