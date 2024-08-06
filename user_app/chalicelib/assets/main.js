@@ -2,11 +2,6 @@ const mmDataTable = new DataTable('#mmDataTable', {
     data: [],
     columns: [
         {
-            data: null,
-            orderable: false,
-            render: DataTable.render.select(),
-        },
-        {
             data: 'id'
         },
         {
@@ -55,10 +50,6 @@ const mmDataTable = new DataTable('#mmDataTable', {
     scrollX: true,
     scrollY: 300,
     searching: false,
-    select: {
-        style: 'multi',
-        selector: 'td:first-child'
-    }
 });
 
 const mmSummaryTable = new DataTable('#mmSummaryTable', {
@@ -122,8 +113,8 @@ function setupFilteringMmDataForm(codeTables, dataItems) {
     const rangeStartDate = document.querySelector('input[name="rangeStartDate"]');
     const rangeEndDate = document.querySelector('input[name="rangeEndDate"]');
 
-    const startDate = new Date(dataItems[0].timestamp * 1000).toLocaleDateString('sv-SE');
-    const endDate = new Date(dataItems.at(-1).timestamp * 1000).toLocaleDateString('sv-SE');
+    const startDate = new Date(dataItems.at(-1).timestamp * 1000).toLocaleDateString('sv-SE');
+    const endDate = new Date(dataItems[0].timestamp * 1000).toLocaleDateString('sv-SE');
 
     rangeStartDate.min = rangeEndDate.min = startDate;
     rangeStartDate.max = rangeEndDate.max = endDate;
@@ -148,32 +139,36 @@ function setupFilteringMmDataForm(codeTables, dataItems) {
 
     // 測定データ絞り込みボタンの処理
     document.getElementById('filterForm').onsubmit = () => {
-        const form = document.getElementById('filterForm');
-        if (form.reportValidity()) {
-            if (form.menu.value === 'all' && form.mode.value === 'all' && form.period.value === 'all') {
-                loadData(dataItems);
-            } else {
-                const minTs = new Date(form.rangeStartDate.value + 'T00:00:00').getTime() / 1000;
-                const maxTs = new Date(form.rangeEndDate.value + 'T23:59:59').getTime() / 1000;
-                const latestCnt = form.mode.value === 0 ? 20 : 80;
-
-                const results = dataItems.filter((item, idx) => {
-                    if (form.menu.value != 'all') {
-                        if (item.menu !== Number(form.menu.value)) return false;
-                    }
-                    if (form.mode.value != 'all') {
-                        if (item.mode !== Number(form.mode.value)) return false;
-                    }
-                    if (form.period.value === 'range') {
-                        if (item.timestamp < minTs) return false;
-                        if (item.timestamp > maxTs) return false;
-                    } else if (form.period.value === 'latest') {
-                        if (idx >= latestCnt) return false;
-                    }
-                    return true;
-                });
-                loadData(results);
+        try {
+            const form = document.getElementById('filterForm');
+            if (form.reportValidity()) {
+                if (form.menu.value === 'all' && form.mode.value === 'all' && form.period.value === 'all') {
+                    loadData(dataItems);
+                } else {
+                    const minTs = new Date(form.rangeStartDate.value + 'T00:00:00').getTime() / 1000;
+                    const maxTs = new Date(form.rangeEndDate.value + 'T23:59:59').getTime() / 1000;
+                    let count = form.mode.value == 0 ? 20 : 80;
+    
+                    const results = dataItems.filter((item, idx) => {
+                        if (form.menu.value != 'all') {
+                            if (item.menu !== Number(form.menu.value)) return false;
+                        }
+                        if (form.mode.value != 'all') {
+                            if (item.mode !== Number(form.mode.value)) return false;
+                        }
+                        if (form.period.value === 'range') {
+                            if (item.timestamp < minTs) return false;
+                            if (item.timestamp > maxTs) return false;
+                        } else if (form.period.value === 'latest') {
+                            if (--count < 0) return false;
+                        }
+                        return true;
+                    });
+                    loadData(results);
+                }
             }
+        } catch (e) {
+            console.error(e);
         }
         return false;
     };
@@ -182,50 +177,56 @@ function setupFilteringMmDataForm(codeTables, dataItems) {
 }
 
 function setupMessageForm() {
+    const button = document.getElementById('generateButton');
+    const loading = document.getElementById('loadingProgress');
+
     // メッセージ生成ボタンの処理
     document.getElementById('messageForm').onsubmit = () => {
-        try {
+        (async () => {
             const form = document.getElementById('messageForm');
-
-            const selectedRows = mmSummaryTable.rows('.selected').data();
-            const words = [];
-            for (let i = 0; i < selectedRows.length; i++) {
-                const word = codeTables.codes[selectedRows[i].mmCode];
-                words.push(word);
-            }
+            try {
+                const selectedRows = mmSummaryTable.rows('.selected').data();
+                const words = [];
+                for (let i = 0; i < selectedRows.length; i++) {
+                    const word = codeTables.codes[selectedRows[i].mmCode];
+                    words.push(word);
+                }
+                if (words.length < 1 || 8 < words.length) {
+                    alert('選択できる測定コードの数は最大8個です。');
+                    return false;
+                }
     
-            const body = {
-                words: words,
-                ai: form.ai.value,
-                msgtype: form.msgtype.value,
-                msglen: form.msglen.value,
-            }
+                button.disabled = true;
+                loading.style.display = 'block';
     
-            fetch('./message', {
-                method: 'POST',
-                body: JSON.stringify(body),
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-            })
-            .then(res => res.json())
-            .then(({ message }) => {
+                const body = {
+                    words: words,
+                    ai: form.ai.value,
+                    msgtype: form.msgtype.value,
+                    msglen: form.msglen.value,
+                }
+        
+                const res = await fetch('./message', {
+                    method: 'POST',
+                    body: JSON.stringify(body),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                })
+                const { message } = await res.json();
                 document.getElementById('messageTextArea').value = message;
-            });
-        } catch (e) {
-            console.error(e);
-        }
+            } catch (e) {
+                console.error(e);
+            }
+            button.disabled = false;
+            loading.style.display = 'none';
+        })();
         return false;
     };
 }
 
 function loadData(dataItems) {
-    const mmDataItems = dataItems
-        .filter(item => item.mmCode !== undefined)
-        .sort((a, b) => {
-            return b.timestamp - a.timestamp; // 測定日時
-        });
-    mmDataTable.clear().rows.add(mmDataItems).draw();
+    mmDataTable.clear().rows.add(dataItems).draw();
 
     const mmCodeCountMap = {}
     for (const item of dataItems) {

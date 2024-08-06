@@ -39,7 +39,7 @@ def home_page():
 
 def convert_device_data_items(items):
     results = []
-    i = 1
+    i = len(items)
     for item in items:
         transformed_item = {
             'id': i,
@@ -48,7 +48,6 @@ def convert_device_data_items(items):
             'menu': int(item['menu']),
             'mode': int(item['mode']),
         }
-        print(transformed_item)
-        results.append(transformed_item)
-        i += 1
+        results.insert(0, transformed_item)
+        i -= 1
     return results

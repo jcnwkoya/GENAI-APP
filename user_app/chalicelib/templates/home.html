@@ -121,7 +121,6 @@
         <table id="mmDataTable" class="stripe row-border order-column nowrap">
           <thead>
             <tr>
-              <th></th>
               <th>No.</th>
               <th>測定日時</th>
               <th>測定メニュー</th>
@@ -201,9 +200,16 @@
               </div>
             </div>
           </fieldset>
-          <button type="submit" class="small-round">メッセージを生成</button>
+          <button id="generateButton" type="submit" class="small-round">
+            メッセージを生成
+          </button>
         </form>
         <div class="field textarea border large">
+          <progress
+            id="loadingProgress"
+            class="circle"
+            style="display: none"
+          ></progress>
           <textarea id="messageTextArea" readonly></textarea>
         </div>
       </div>
