@@ -15,15 +15,17 @@ def home_page():
     if not auth_res:
         return redirect_to_login()
 
-    error_message = req.query_params.get('error') if req.query_params else None
+    device_id = auth_res['device_id']
+    username = auth_res['username']
 
-    device_data_items = query_device_data_items('KZ012312X0009')
+    device_data_items = query_device_data_items(device_id)
     items = convert_device_data_items(device_data_items)
     code_tables = create_code_tables(items)
 
     html = render_template(
         'home.html',
-        error_message=error_message,
+        device_id=device_id,
+        username=username,
         items=items,
         code_tables=code_tables
     )

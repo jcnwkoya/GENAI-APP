@@ -4,6 +4,7 @@ from logging import getLogger
 
 from ..ai_services.bedrock import generate_message
 from ..auth import verify_auth
+from ..repositories.message_history import put_message_history_item
 
 logger = getLogger(__name__)
 
@@ -17,13 +18,14 @@ def post_message():
     if not auth_res:
         return Response(body='Unauthorized', status_code=401)
 
+    device_id = auth_res['device_id']
     body = req.json_body
     words = body.get('words', [])
     ai = body.get('ai', 'bedrock-claude3-haiku')
     msgtype = body.get('msgtype', 'スピリチュアル')
     msglen = body.get('msglen', 'short')
 
-    char_cnt = 40
+    char_cnt = 50
     if msglen == 'short':
         char_cnt = 50
     elif msglen == 'medium':
@@ -38,6 +40,8 @@ def post_message():
             message = generate_message(words, model, msgtype, char_cnt)
 
         if message:
+            put_message_history_item(device_id, model, words, message)
+
             return Response(
                 body=json.dumps({'message': message}),
                 status_code=200,

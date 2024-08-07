@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ja" translate="no">
   <head>
-    <title>Gen AI App Viewer</title>
+    <title>Kazutama-net サンプルアプリ</title>
     <style>
       .error {
         color: red;
@@ -33,7 +33,7 @@
   <body class="light">
     <header>
       <nav>
-        <h5 class="max center-align">アプリタイトル</h5>
+        <h5 class="max center-align">Kazutama-net サンプルアプリ</h5>
       </nav>
     </header>
     <!--
@@ -53,11 +53,12 @@
     </nav>
     -->
     <main class="responsive">
-      {% if error_message %}
-      <p class="error">Error: {{ error_message }}</p>
-      {% endif %}
       <section>
-        <h5>測定結果</h5>
+        <h4 class="small">SN：{{ device_id }} &nbsp; USER：{{ username }}</h4>
+      </section>
+      <hr class="large" />
+      <section>
+        <h5 class="small">測定結果</h5>
         <form id="filterForm">
           <fieldset>
             <legend>絞り込み条件</legend>
@@ -139,7 +140,7 @@
         </table>
       </section>
       <section>
-        <h5>測定コード統計</h5>
+        <h5 class="small">測定コード統計</h5>
         <table
           id="mmSummaryTable"
           class="stripe row-border order-column nowrap"
@@ -158,7 +159,7 @@
       <section>
         <form id="messageForm">
           <fieldset>
-            <legend>メッセージ</legend>
+            <legend>カウンセリングメッセージ</legend>
             <div class="grid">
               <div class="s12 m6">
                 <div class="field label suffix border">

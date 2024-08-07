@@ -12,7 +12,7 @@
     },
     {
       "Effect": "Allow",
-      "Action": ["dynamodb:GetItem", "dynamodb:Query"],
+      "Action": ["dynamodb:GetItem", "dynamodb:Query", "dynamodb:PutItem"],
       "Resource": "*"
     },
     {

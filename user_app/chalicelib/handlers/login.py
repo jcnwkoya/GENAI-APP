@@ -2,7 +2,8 @@ from chalice import Blueprint, Response
 from urllib.parse import parse_qs
 from logging import getLogger
 
-from ..auth import authenticate, create_session
+from ..auth import create_session
+from ..repositories.device_data import first_device_data_item
 from ..util import path_resolve
 from ..template import render_template
 
@@ -10,17 +11,25 @@ logger = getLogger(__name__)
 
 extra_routes = Blueprint(__name__)
 
+PASSWORD = 'ritera'
+
 
 @extra_routes.route('/login', methods=['POST'],
                     content_types=['application/x-www-form-urlencoded'])
 def post_login():
     req = extra_routes.current_request
     body = parse_qs(req.raw_body.decode('utf-8'))
+    device_id = body.get('device_id', [''])[0]
     username = body.get('username', [''])[0]
     password = body.get('password', [''])[0]
 
-    if authenticate(username, password):
-        set_cookie_header_value = create_session(username)
+    found = first_device_data_item(device_id)
+    if found and password == PASSWORD:
+        set_cookie_header_value = create_session({
+            'device_id': device_id,
+            'username': username,
+        })
+        print(set_cookie_header_value)
         return Response(
             body='',
             status_code=302,  # 302 Found for redirection
