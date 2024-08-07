@@ -20,7 +20,19 @@ def query_device_data_items(device_id):
         )
         items.extend(response['Items'])
 
-    return items
+    results = []
+    i = len(items)
+    for item in items:
+        transformed_item = {
+            'id': i,
+            'timestamp': int(item['timestamp']),
+            'mmCode': str(item['mmCode']).zfill(5),  # 先頭0埋め
+            'menu': int(item['menu']),
+            'mode': int(item['mode']),
+        }
+        results.insert(0, transformed_item)  # 降順にするために先頭に挿入
+        i -= 1
+    return results
 
 
 def first_device_data_item(device_id):

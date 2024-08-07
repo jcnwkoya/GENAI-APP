@@ -1,9 +1,9 @@
+from ..template import render_template
 from chalice import Blueprint, Response
 
 from ..auth import verify_auth, redirect_to_login
-from ..data import load_data
+from ..data import load_mm_codes, load_data
 from ..repositories.device_data import query_device_data_items
-from ..template import render_template
 
 extra_routes = Blueprint(__name__)
 
@@ -18,8 +18,7 @@ def home_page():
     device_id = auth_res['device_id']
     username = auth_res['username']
 
-    device_data_items = query_device_data_items(device_id)
-    items = convert_device_data_items(device_data_items)
+    items = query_device_data_items(device_id)
     code_tables = create_code_tables(items)
 
     html = render_template(
@@ -34,22 +33,6 @@ def home_page():
                     headers={'Content-Type': 'text/html;charset=utf-8'})
 
 
-def convert_device_data_items(items):
-    results = []
-    i = len(items)
-    for item in items:
-        transformed_item = {
-            'id': i,
-            'timestamp': int(item['timestamp']),
-            'mmCode': int(item['mmCode']),
-            'menu': int(item['menu']),
-            'mode': int(item['mode']),
-        }
-        results.insert(0, transformed_item)
-        i -= 1
-    return results
-
-
 def create_code_tables(items):
     mm_code_map = {}
     menu_map = {}
@@ -59,7 +42,7 @@ def create_code_tables(items):
         menu_map[item['menu']] = True
         mode_map[item['mode']] = True
 
-    mm_codes = filter_dict(load_data('mm_code'), mm_code_map)
+    mm_codes = filter_dict(load_mm_codes(), mm_code_map)
     menus = filter_dict(load_data('menu'), menu_map)
     modes = filter_dict(load_data('mode'), mode_map)
     return {
