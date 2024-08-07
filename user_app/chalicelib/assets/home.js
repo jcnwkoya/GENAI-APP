@@ -38,7 +38,7 @@ const mmDataTable = new DataTable('#mmDataTable', {
             data: 'mmCode',
             render: function(data, type, row) {
               if (type === 'display') {
-                return codeTables.codes[data] || data;
+                return codeTables.mmCodes[data] || data;
               }
               return data;
             }
@@ -70,7 +70,7 @@ const mmSummaryTable = new DataTable('#mmSummaryTable', {
             data: 'mmCode',
             render: function(data, type, row) {
               if (type === 'display') {
-                return codeTables.codes[data] || data;
+                return codeTables.mmCodes[data] || data;
               }
               return data;
             }
@@ -188,7 +188,7 @@ function setupMessageForm() {
                 const selectedRows = mmSummaryTable.rows('.selected').data();
                 const words = [];
                 for (let i = 0; i < selectedRows.length; i++) {
-                    const word = codeTables.codes[selectedRows[i].mmCode];
+                    const word = codeTables.mmCodes[selectedRows[i].mmCode];
                     words.push(word);
                 }
                 if (words.length < 1 || 8 < words.length) {

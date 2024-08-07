@@ -33,7 +33,7 @@
   <body class="light">
     <header>
       <nav>
-        <h5 class="max center-align">Gen AI App Viewer</h5>
+        <h5 class="max center-align">アプリタイトル</h5>
       </nav>
     </header>
     <!--
@@ -61,8 +61,8 @@
         <form id="filterForm">
           <fieldset>
             <legend>絞り込み条件</legend>
-            <div class="row">
-              <div class="max">
+            <div class="grid">
+              <div class="s12 m6">
                 <div class="field label suffix border">
                   <select name="menu">
                     <option value="all">すべて</option>
@@ -71,7 +71,7 @@
                   <i>arrow_drop_down</i>
                 </div>
               </div>
-              <div class="max">
+              <div class="s12 m6">
                 <div class="field label suffix border">
                   <select name="mode">
                     <option value="all">すべて</option>
@@ -80,43 +80,50 @@
                   <i>arrow_drop_down</i>
                 </div>
               </div>
-            </div>
-            <div class="row">
-              <div class="max">
-                <div class="field middle-align">
-                  <nav>
-                    <label class="radio">
-                      <input type="radio" name="period" value="all" checked />
-                      <span>すべて</span>
-                    </label>
-                    <label class="radio">
-                      <input type="radio" name="period" value="latest" />
-                      <span>最新</span>
-                    </label>
-                    <label class="radio">
-                      <input type="radio" name="period" value="range" />
-                      <span>期間選択</span>
-                    </label>
-                  </nav>
-                </div>
+              <div class="s12 m12">
+                <fieldset>
+                  <legend>検索期間</legend>
+                  <div class="grid">
+                    <nav class="s12 m12">
+                      <label class="radio">
+                        <input type="radio" name="period" value="all" checked />
+                        <span>すべて</span>
+                      </label>
+                      <label class="radio">
+                        <input type="radio" name="period" value="latest" />
+                        <span>最新</span>
+                      </label>
+                      <label class="radio">
+                        <input type="radio" name="period" value="range" />
+                        <span>期間選択</span>
+                      </label>
+                    </nav>
+                    <div class="s12 m6">
+                      <div class="field label border">
+                        <input type="date" name="rangeStartDate" />
+                        <label>期間（開始）</label>
+                      </div>
+                    </div>
+                    <div class="s12 m6">
+                      <div class="field label border">
+                        <input type="date" name="rangeEndDate" />
+                        <label>期間（終了）</label>
+                      </div>
+                    </div>
+                  </div>
+                </fieldset>
               </div>
-            </div>
-            <div class="row">
-              <div class="max">
-                <div class="field label border">
-                  <input type="date" name="rangeStartDate" />
-                  <label>期間（開始）</label>
-                </div>
-              </div>
-              <div class="max">
-                <div class="field label border">
-                  <input type="date" name="rangeEndDate" />
-                  <label>期間（終了）</label>
-                </div>
+              <div>
+                <button
+                  type="submit"
+                  class="small-round"
+                  style="margin: 8px 2px; width: 280px; max-width: 80%"
+                >
+                  検索
+                </button>
               </div>
             </div>
           </fieldset>
-          <button type="submit" class="small-round">検索</button>
         </form>
         <table id="mmDataTable" class="stripe row-border order-column nowrap">
           <thead>
@@ -148,12 +155,12 @@
           </thead>
         </table>
       </section>
-      <div>
+      <section>
         <form id="messageForm">
           <fieldset>
-            <legend>生成条件</legend>
-            <div class="row">
-              <div class="max">
+            <legend>メッセージ</legend>
+            <div class="grid">
+              <div class="s12 m6">
                 <div class="field label suffix border">
                   <select name="msgtype">
                     <option>スピリチュアル</option>
@@ -167,7 +174,7 @@
                   <i>arrow_drop_down</i>
                 </div>
               </div>
-              <div class="max">
+              <div class="s12 m6">
                 <div class="field label suffix border">
                   <select name="ai">
                     <option value="bedrock-claude3-haiku">
@@ -180,46 +187,52 @@
                   <i>arrow_drop_down</i>
                 </div>
               </div>
-              <div class="max">
-                <div class="field middle-align">
+              <div class="s12 m12">
+                <fieldset>
+                  <legend>メッセージの長さ</legend>
                   <nav>
                     <label class="radio">
                       <input type="radio" name="msglen" value="short" checked />
-                      <span>一言（50文字）</span>
+                      <span>一言（50文字程度）</span>
                     </label>
                     <label class="radio">
                       <input type="radio" name="msglen" value="medium" />
-                      <span>短文（200文字）</span>
+                      <span>短文（200文字程度）</span>
                     </label>
                     <label class="radio">
                       <input type="radio" name="msglen" value="long" />
-                      <span>長文（400文字）</span>
+                      <span>長文（400文字程度）</span>
                     </label>
                   </nav>
+                </fieldset>
+              </div>
+              <div class="s12 m12">
+                <button
+                  id="generateButton"
+                  type="submit"
+                  class="small-round"
+                  style="margin: 12px 0px; width: 280px; max-width: 80%"
+                >
+                  メッセージを生成
+                </button>
+              </div>
+              <div class="s12 m12">
+                <div class="field textarea border extra">
+                  <progress
+                    id="loadingProgress"
+                    class="circle"
+                    style="display: none"
+                  ></progress>
+                  <textarea id="messageTextArea" readonly></textarea>
                 </div>
               </div>
             </div>
           </fieldset>
-          <button id="generateButton" type="submit" class="small-round">
-            メッセージを生成
-          </button>
         </form>
-        <div class="field textarea border large">
-          <progress
-            id="loadingProgress"
-            class="circle"
-            style="display: none"
-          ></progress>
-          <textarea id="messageTextArea" readonly></textarea>
-        </div>
-      </div>
+      </section>
     </main>
     <script>
-      window.codeTables = {
-        codes: {{ codes }},
-        menus: {{ menus }},
-        modes: {{ modes }},
-      };
+      window.codeTables = {{ code_tables }};
       window.deviceDataItems = {{ items }};
     </script>
     <script src="./assets/home.js"></script>

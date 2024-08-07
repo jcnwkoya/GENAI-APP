@@ -13,25 +13,20 @@ def home_page():
     req = extra_routes.current_request
     auth_res = verify_auth(req)
     if not auth_res:
-        return redirect_to_login
+        return redirect_to_login()
 
     error_message = req.query_params.get('error') if req.query_params else None
 
     device_data_items = query_device_data_items('KZ012312X0009')
     items = convert_device_data_items(device_data_items)
-    print(items)
-
-    codes = load_data('code')
-    menus = load_data('menu')
-    modes = load_data('mode')
+    code_tables = create_code_tables(items)
 
     html = render_template(
         'home.html',
         error_message=error_message,
         items=items,
-        codes=codes,
-        menus=menus,
-        modes=modes)
+        code_tables=code_tables
+    )
 
     return Response(body=html, status_code=200,
                     headers={'Content-Type': 'text/html;charset=utf-8'})
@@ -51,3 +46,30 @@ def convert_device_data_items(items):
         results.insert(0, transformed_item)
         i -= 1
     return results
+
+
+def create_code_tables(items):
+    mm_code_map = {}
+    menu_map = {}
+    mode_map = {}
+    for item in items:
+        mm_code_map[item['mmCode']] = True
+        menu_map[item['menu']] = True
+        mode_map[item['mode']] = True
+
+    mm_codes = filter_dict(load_data('mm_code'), mm_code_map)
+    menus = filter_dict(load_data('menu'), menu_map)
+    modes = filter_dict(load_data('mode'), mode_map)
+    return {
+        'mmCodes': mm_codes,
+        'menus': menus,
+        'modes': modes
+    }
+
+
+def filter_dict(dict, include_map):
+    result_dict = {}
+    for val, name in dict.items():
+        if val in include_map:
+            result_dict[val] = name
+    return result_dict
