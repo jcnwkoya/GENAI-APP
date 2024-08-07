@@ -23,35 +23,36 @@ def post_login():
     username = body.get('username', [''])[0]
     password = body.get('password', [''])[0]
 
-    found = first_device_data_item(device_id)
-    if found and password == PASSWORD:
-        set_cookie_header_value = create_session({
-            'device_id': device_id,
-            'username': username,
-        })
-        print(set_cookie_header_value)
-        return Response(
-            body='',
-            status_code=302,  # 302 Found for redirection
-            headers={
-                'Location': path_resolve('/'),
-                'Set-Cookie': set_cookie_header_value,
-            }
-        )
-    else:
-        return Response(body='', status_code=302,
-                        headers={
-                            'Location': path_resolve('/login')
-                            + '?error=Invalid+username+or+password'
-                        })
+    if device_id and password == PASSWORD:
+        found = first_device_data_item(device_id)
+        if found:
+            set_cookie_header_value = create_session({
+                'device_id': device_id,
+                'username': username,
+            })
+
+            return Response(
+                body='',
+                status_code=302,  # 302 Found for redirection
+                headers={
+                    'Location': path_resolve('/'),
+                    'Set-Cookie': set_cookie_header_value,
+                }
+            )
+
+    return Response(body='', status_code=302,
+                    headers={
+                        'Location': path_resolve('/login')
+                        + '?error=login_failed'
+                    })
 
 
 @extra_routes.route('/login', methods=['GET'])
 def get_login():
     req = extra_routes.current_request
-    error_message = req.query_params.get('error') if req.query_params else None
+    err = req.query_params.get('error') if req.query_params else None
 
-    html = render_template('login.html', error_message=error_message)
+    html = render_template('login.html', error=err)
 
     return Response(body=html, status_code=200,
                     headers={'Content-Type': 'text/html;charset=utf-8'})

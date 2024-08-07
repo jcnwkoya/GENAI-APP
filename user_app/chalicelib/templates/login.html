@@ -28,12 +28,24 @@
   <body class="light">
     <header>
       <nav>
-        <h5 class="max center-align">ログイン</h5>
+        <h5 class="max center-align">Kazutama-net サンプルアプリ</h5>
       </nav>
     </header>
-    <main class="responsive" style="max-width: 500px">
-      {% if error_message %}
-      <p class="error">Error: {{ error_message }}</p>
+    <main class="responsive" style="max-width: 400px">
+      <div style="margin: 16px 0">
+        <h3 class="small">ログイン</h3>
+      </div>
+      {% if error == 'login_failed' %}
+      <div id="snackbar" class="snackbar error top">
+        <span
+          >指定された端末の測定データが存在しないか、パスワードが間違っています。</span
+        >
+      </div>
+      <script>
+        window.onload = () => {
+          ui("#snackbar", 3000);
+        };
+      </script>
       {% endif %}
       <section>
         <form id="loginForm" method="POST" action="./login">
@@ -57,11 +69,7 @@
               </div>
             </div>
             <div class="s12 m12">
-              <button
-                type="submit"
-                class="small-round"
-                style="margin: 12px 0px; width: 280px; max-width: 80%"
-              >
+              <button type="submit" class="small-round responsive large">
                 ログイン
               </button>
             </div>
