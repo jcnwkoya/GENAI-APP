@@ -39,6 +39,10 @@ def post_message():
             model = 'anthropic.claude-3-haiku-20240307-v1:0'
             region = 'ap-northeast-1'
             message = generate_message(words, region, model, msgtype, char_cnt)
+        elif ai == 'bedrock/claude3-5-sonnet':
+            model = 'anthropic.claude-3-5-sonnet-20240620-v1:0'
+            region = 'ap-northeast-1'
+            message = generate_message(words, region, model, msgtype, char_cnt)
         elif ai == 'bedrock/mistral-7b':
             model = 'mistral.mistral-7b-instruct-v0:2'
             region = 'us-west-2'
