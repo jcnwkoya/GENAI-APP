@@ -1,6 +1,7 @@
 from .util import path_resolve
 from chalice import Response
 from http.cookies import SimpleCookie
+from datetime import datetime, timedelta, timezone
 from urllib.parse import parse_qsl, urlencode
 
 
@@ -44,3 +45,18 @@ def validate_session(value):
         return False
     except Exception:
         return False
+
+
+def clear_session():
+    cookie = SimpleCookie()
+    cookie['session'] = ''
+    cookie['session']['httponly'] = True
+    cookie['session']['secure'] = True
+    cookie['session']['samesite'] = 'Strict'
+
+    # 過去の日付をセット
+    expires = datetime.now(timezone.utc) - timedelta(days=1)
+    cookie['session']['expires'] = expires.strftime(
+        "%a, %d %b %Y %H:%M:%S GMT")
+
+    return cookie['session'].OutputString()

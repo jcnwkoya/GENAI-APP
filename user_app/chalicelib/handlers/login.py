@@ -2,7 +2,7 @@ from chalice import Blueprint, Response
 from urllib.parse import parse_qs
 from logging import getLogger
 
-from ..auth import create_session
+from ..auth import clear_session, create_session
 from ..repositories.device_data import first_device_data_item
 from ..util import path_resolve
 from ..template import render_template
@@ -56,3 +56,16 @@ def get_login():
 
     return Response(body=html, status_code=200,
                     headers={'Content-Type': 'text/html;charset=utf-8'})
+
+
+@extra_routes.route('/logout', methods=['POST'],
+                    content_types=['application/x-www-form-urlencoded'])
+def post_logout():
+    return Response(
+        body='',
+        status_code=302,
+        headers={
+            'Location': path_resolve('/login'),
+            'Set-Cookie': clear_session(),
+        }
+    )
