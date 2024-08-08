@@ -2,10 +2,12 @@ const mmDataTable = new DataTable('#mmDataTable', {
     data: [],
     columns: [
         {
-            data: 'id'
+            data: 'id',
+            width: '5ex',
         },
         {
             data: 'timestamp',
+            className: 'dt-head-left dt-body-left',
             render: function(data, type, row) {
                 if (type === 'display') {
                   return new Date(data * 1000).toLocaleString();
@@ -15,6 +17,7 @@ const mmDataTable = new DataTable('#mmDataTable', {
           },
         {
             data: 'menu',
+            className: 'dt-head-left dt-body-left',
             render: function(data, type, row) {
               if (type === 'display') {
                 return codeTables.menus[data] || data;
@@ -24,6 +27,7 @@ const mmDataTable = new DataTable('#mmDataTable', {
         },
         {
             data: 'mode',
+            className: 'dt-head-left dt-body-left',
             render: function(data, type, row) {
               if (type === 'display') {
                 return codeTables.modes[data] || data;
@@ -32,10 +36,13 @@ const mmDataTable = new DataTable('#mmDataTable', {
             }
         },
         {
-            data: 'mmCode'
+            data: 'mmCode',
+            className: 'dt-head-left dt-body-left',
+            width: '12ex',
         },
         {
             data: 'mmCode',
+            className: 'dt-head-left dt-body-left',
             render: function(data, type, row) {
               if (type === 'display') {
                 return codeTables.mmCodes[data] || data;
@@ -58,16 +65,21 @@ const mmSummaryTable = new DataTable('#mmSummaryTable', {
         {
             data: null,
             orderable: false,
+            width: '30px',
             render: DataTable.render.select(),
         },
         {
-            data: 'id'
-        },
-        {
-            data: 'mmCode'
+            data: 'id',
+            width: '5ex',
         },
         {
             data: 'mmCode',
+            className: 'dt-head-left dt-body-left',
+            width: '12ex',
+        },
+        {
+            data: 'mmCode',
+            className: 'dt-head-left dt-body-left',
             render: function(data, type, row) {
               if (type === 'display') {
                 return codeTables.mmCodes[data] || data;
@@ -77,6 +89,7 @@ const mmSummaryTable = new DataTable('#mmSummaryTable', {
         },
         {
             data: 'count',
+            width: '10ex',
         },
     ],
     info: false,

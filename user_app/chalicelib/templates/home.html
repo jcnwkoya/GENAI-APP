@@ -1,18 +1,18 @@
 <!DOCTYPE html>
 <html lang="ja" translate="no">
   <head>
-    <title>Kazutama-net サンプルアプリ</title>
+    <title>Kazutama-net アプリ</title>
     {% include "common_header.html" %}
-    <script src="./assets/jquery-3.7.1.min.js"></script>
-    <link rel="stylesheet" href="./assets/datatables.css" />
-    <link rel="stylesheet" href="./assets/select.dataTables.css" />
-    <script src="./assets/datatables.js"></script>
-    <script src="./assets/dataTables.select.js"></script>
+    <script src="assets/jquery-3.7.1.min.js"></script>
+    <link rel="stylesheet" href="assets/datatables.css" />
+    <link rel="stylesheet" href="assets/select.dataTables.css" />
+    <script src="assets/datatables.js"></script>
+    <script src="assets/dataTables.select.js"></script>
   </head>
   <body class="light">
     <header>
       <nav>
-        <h5 class="max">Kazutama-net サンプルアプリ</h5>
+        <h5 class="max center-align">Kazutama-net アプリ</h5>
         <form method="POST" action="./logout">
           <button type="submit" class="circle transparent">
             <i>
@@ -48,7 +48,7 @@
     </nav>
     -->
     <main class="responsive">
-      <section>
+      <section style="margin-top: 15px">
         <h4 class="small">SN：{{ device_id }} &nbsp; USER：{{ username }}</h4>
       </section>
       <hr class="large" />
@@ -134,7 +134,7 @@
           </thead>
         </table>
       </section>
-      <section>
+      <section style="margin-top: 32px; max-width: 640px">
         <h5 class="small">測定コード統計</h5>
         <table
           id="mmSummaryTable"
