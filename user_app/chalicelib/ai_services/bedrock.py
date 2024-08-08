@@ -4,15 +4,15 @@ from logging import getLogger
 logger = getLogger(__name__)
 
 
-def generate_message(words, model, msgtype, char_count):
+def generate_message(words, region, model, msgtype, char_count):
     words_joined = "と".join(words)
 
     prompt = f'{words_joined}を感じている人に{
-        msgtype}な考え方を踏まえてポジティブアドバイスを箇条書きではなく自然な文体で{char_count}文字以内でしてください'
+        msgtype}な考え方を踏まえてポジティブアドバイスを箇条書きではなく自然な文体で{char_count}文字程度でしてください'
 
     logger.info(prompt)
 
-    client = boto3.client('bedrock-runtime')
+    client = boto3.client('bedrock-runtime', region_name=region)
     response = client.converse(
         modelId=model,
         messages=[

@@ -192,6 +192,7 @@ function setupFilteringMmDataForm(codeTables, dataItems) {
 function setupMessageForm() {
     const button = document.getElementById('generateButton');
     const loading = document.getElementById('loadingProgress');
+    const textarea = document.getElementById('messageTextArea');
 
     // メッセージ生成ボタンの処理
     document.getElementById('messageForm').onsubmit = () => {
@@ -205,12 +206,13 @@ function setupMessageForm() {
                     words.push(word);
                 }
                 if (words.length < 1 || 8 < words.length) {
-                    alert('選択できる測定コードの数は最大8個です。');
+                    alert('測定コード統計からワードを選択してください。選択できる測定コードの数は最大8個です。');
                     return false;
                 }
-    
+
                 button.disabled = true;
                 loading.style.display = 'block';
+                textarea.value = '';
     
                 const body = {
                     words: words,
@@ -218,7 +220,7 @@ function setupMessageForm() {
                     msgtype: form.msgtype.value,
                     msglen: form.msglen.value,
                 }
-        
+
                 const res = await fetch('./message', {
                     method: 'POST',
                     body: JSON.stringify(body),
@@ -227,7 +229,7 @@ function setupMessageForm() {
                     },
                 })
                 const { message } = await res.json();
-                document.getElementById('messageTextArea').value = message;
+                textarea.value = message;
             } catch (e) {
                 console.error(e);
             }

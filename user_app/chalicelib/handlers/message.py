@@ -35,9 +35,18 @@ def post_message():
 
     try:
         # メッセージ生成
-        if ai == 'bedrock-claude3-haiku':
+        if ai == 'bedrock/claude3-haiku':
             model = 'anthropic.claude-3-haiku-20240307-v1:0'
-            message = generate_message(words, model, msgtype, char_cnt)
+            region = 'ap-northeast-1'
+            message = generate_message(words, region, model, msgtype, char_cnt)
+        elif ai == 'bedrock/mistral-7b':
+            model = 'mistral.mistral-7b-instruct-v0:2'
+            region = 'us-west-2'
+            message = generate_message(words, region, model, msgtype, char_cnt)
+        elif ai == 'bedrock/llama3-1-8b':
+            model = 'meta.llama3-1-8b-instruct-v1:0'
+            region = 'us-west-2'
+            message = generate_message(words, region, model, msgtype, char_cnt)
 
         if message:
             put_message_history_item(device_id, model, words, message)
