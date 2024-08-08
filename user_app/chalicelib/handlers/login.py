@@ -11,8 +11,6 @@ logger = getLogger(__name__)
 
 extra_routes = Blueprint(__name__)
 
-PASSWORD = 'ritera'
-
 
 @extra_routes.route('/login', methods=['POST'],
                     content_types=['application/x-www-form-urlencoded'])
@@ -21,9 +19,9 @@ def post_login():
     body = parse_qs(req.raw_body.decode('utf-8'))
     device_id = body.get('device_id', [''])[0]
     username = body.get('username', [''])[0]
-    password = body.get('password', [''])[0]
+    # password = body.get('password', [''])[0]
 
-    if device_id and password == PASSWORD:
+    if device_id:
         found = first_device_data_item(device_id)
         if found:
             set_cookie_header_value = create_session({

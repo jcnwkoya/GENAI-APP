@@ -5,10 +5,6 @@ from datetime import datetime, timedelta, timezone
 from urllib.parse import parse_qsl, urlencode
 
 
-def authenticate(username, password):
-    return username == 'user' and password == 'ritera'
-
-
 def authorize(device_id):
     cookie = SimpleCookie()
     cookie['session'] = device_id
