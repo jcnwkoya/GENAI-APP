@@ -105,7 +105,11 @@ const mmSummaryTable = new DataTable('#mmSummaryTable', {
     }
 });
 
+/**
+ * 測定データリストの絞り込みフォームのセットアップ
+ */
 function setupFilteringMmDataForm(codeTables, dataItems) {
+    // メニューの選択肢をセットアップ
     const menuSelect = document.querySelector('select[name="menu"]')
     Object.entries(codeTables.menus).forEach(([val, name]) => {
         const opt = document.createElement('option');
@@ -114,6 +118,7 @@ function setupFilteringMmDataForm(codeTables, dataItems) {
         menuSelect.appendChild(opt);
     });
 
+    // モードの選択肢をセットアップ
     const modeSelect = document.querySelector('select[name="mode"]')
     Object.entries(codeTables.modes).forEach(([val, name]) => {
         const opt = document.createElement('option');
@@ -122,6 +127,7 @@ function setupFilteringMmDataForm(codeTables, dataItems) {
         modeSelect.appendChild(opt);
     });
 
+    // 検索期間のセットアップ
     const periodRadios = document.querySelectorAll('input[name="period"]');
     const rangeStartDate = document.querySelector('input[name="rangeStartDate"]');
     const rangeEndDate = document.querySelector('input[name="rangeEndDate"]');
@@ -134,6 +140,10 @@ function setupFilteringMmDataForm(codeTables, dataItems) {
     rangeStartDate.value = startDate;
     rangeEndDate.value = endDate;
 
+    /**
+     * 検索期間のラジオボタン変更時の処理
+     * 開始と終了の入力欄の有効/無効を切り替える
+     */
     const updateDateFieldsState = () => {
         const selectedValue = document.querySelector('input[name="period"]:checked')?.value;
         const isRangeSelected = selectedValue === 'range';
@@ -145,43 +155,53 @@ function setupFilteringMmDataForm(codeTables, dataItems) {
             input.parentElement.classList.toggle('disabled', !isRangeSelected);
         });
     }
-
     periodRadios.forEach(radio => {
         radio.addEventListener('change', updateDateFieldsState);
     });
 
-    // 測定データ絞り込みボタンの処理
-    document.getElementById('filterForm').onsubmit = () => {
+    // 検索ボタンの処理
+    document.getElementById('filterForm').onsubmit = evt => {
         try {
-            const form = document.getElementById('filterForm');
+            const form = evt.target;
             if (form.reportValidity()) {
                 if (form.menu.value === 'all' && form.mode.value === 'all' && form.period.value === 'all') {
                     loadData(dataItems);
                 } else {
+                    const targetMenu = Number(form.menu.value); // all は NaN になる
+                    const targetMode = Number(form.mode.value); // all は NaN になる
+
+                    const isRange = form.period.value === 'range';
                     const minTs = new Date(form.rangeStartDate.value + 'T00:00:00').getTime() / 1000;
-                    const maxTs = new Date(form.rangeEndDate.value + 'T23:59:59').getTime() / 1000;
-                    let count = form.mode.value == 0 ? 20 : 80;
-    
-                    const results = dataItems.filter((item, idx) => {
-                        if (form.menu.value != 'all') {
-                            if (item.menu !== Number(form.menu.value)) return false;
-                        }
-                        if (form.mode.value != 'all') {
-                            if (item.mode !== Number(form.mode.value)) return false;
-                        }
-                        if (form.period.value === 'range') {
+                    const maxTs = new Date(form.rangeEndDate.value + 'T23:59:59').getTime() / 1000;    
+
+                    let results = dataItems.filter(item => {
+                        if (!isNaN(targetMenu) && item.menu !== targetMenu) return false;
+                        if (!isNaN(targetMode) && item.mode !== targetMode) return false;
+
+                        if (isRange) {
                             if (item.timestamp < minTs) return false;
                             if (item.timestamp > maxTs) return false;
-                        } else if (form.period.value === 'latest') {
-                            if (--count < 0) return false;
                         }
                         return true;
                     });
+
+                    if (form.period.value === 'latest' && results.length > 0) {
+                        switch (results[0].mode) {
+                            case 0: // エーテル
+                                results = results.slice(0, 20);
+                                break;
+                            case 1: // アストラル
+                                results = results.slice(0, 80);
+                                break;
+                        }
+                        results
+                    }
+
                     loadData(results);
                 }
             }
-        } catch (e) {
-            console.error(e);
+        } catch (err) {
+            console.error(err);
         }
         return false;
     };
