@@ -3,7 +3,7 @@
 ## ローカルでサーバー起動
 
 ```
-$ cd user-app
+$ cd user_app
 $ chalice local
 ```
 

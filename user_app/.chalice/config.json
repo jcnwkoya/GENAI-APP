@@ -6,14 +6,25 @@
       "api_gateway_stage": "prd",
       "autogen_policy": false,
       "environment_variables": {
-        "PATH_PREFIX": "",
-        "RES_SUFFIX": "-prd"
+        "APP_NAME": "genai-user-app-prd",
+        "PATH_PREFIX": "/prd",
+        "RES_SUFFIX": "-poc"
       }
     },
     "poc": {
       "api_gateway_stage": "poc",
       "autogen_policy": false,
       "environment_variables": {
+        "APP_NAME": "genai-user-app-poc",
+        "PATH_PREFIX": "/poc",
+        "RES_SUFFIX": "-poc"
+      }
+    },
+    "poc2": {
+      "api_gateway_stage": "poc",
+      "autogen_policy": false,
+      "environment_variables": {
+        "APP_NAME": "genai-user-app-poc2",
         "PATH_PREFIX": "/poc",
         "RES_SUFFIX": "-poc"
       }
