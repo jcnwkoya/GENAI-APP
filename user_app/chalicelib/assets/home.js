@@ -209,15 +209,37 @@ function setupFilteringMmDataForm(codeTables, dataItems) {
     updateDateFieldsState(); // 初期化処理
 }
 
-function setupMessageForm() {
+/**
+ * メッセージ生成フォームのセットアップ
+ */
+function setupMessageForm(messageTypes) {
+    const messageTypeSelect = document.querySelector('select[name="msgtype"]');
     const button = document.getElementById('generateButton');
     const loading = document.getElementById('loadingProgress');
-    const textarea = document.getElementById('messageTextArea');
+    const promptTextArea = document.getElementById('promptTextArea');
+    const msgTextArea = document.getElementById('messageTextArea');
+
+    messageTypes.forEach(item => {
+        const opt = document.createElement('option');
+        opt.textContent = item.name;
+        opt.value = item.code;
+        messageTypeSelect.appendChild(opt);
+    });
+    promptTextArea.value = messageTypes[0].userPrompt;
+    messageTypeSelect.onchange = evt => {
+        const val = evt.target.value;
+        if (val === 'free') {
+            promptTextArea.disabled = false;
+        } else {
+            promptTextArea.value = messageTypes.find(item => item.code === val).userPrompt;
+            promptTextArea.disabled = true;
+        }
+    };
 
     // メッセージ生成ボタンの処理
-    document.getElementById('messageForm').onsubmit = () => {
+    document.getElementById('messageForm').onsubmit = evt => {
         (async () => {
-            const form = document.getElementById('messageForm');
+            const form = evt.target;
             try {
                 const selectedRows = mmSummaryTable.rows('.selected').data();
                 const words = [];
@@ -232,13 +254,14 @@ function setupMessageForm() {
 
                 button.disabled = true;
                 loading.style.display = 'block';
-                textarea.value = '';
-    
+                msgTextArea.value = '';
+
                 const body = {
                     words: words,
                     ai: form.ai.value,
                     msgtype: form.msgtype.value,
                     msglen: form.msglen.value,
+                    prompt: form.msgtype.value === 'free' ? form.prompt.value : undefined,
                 }
 
                 const res = await fetch('./message', {
@@ -249,7 +272,7 @@ function setupMessageForm() {
                     },
                 })
                 const { message } = await res.json();
-                textarea.value = message;
+                msgTextArea.value = message;
             } catch (e) {
                 console.error(e);
             }
@@ -287,7 +310,7 @@ function loadData(dataItems) {
 document.addEventListener('DOMContentLoaded', function() {
     setupFilteringMmDataForm(window.codeTables, window.deviceDataItems);
 
-    setupMessageForm();
+    setupMessageForm(window.messageTypes);
 
     // 初期ロード
     loadData(window.deviceDataItems);

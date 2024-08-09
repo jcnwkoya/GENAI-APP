@@ -4,6 +4,7 @@ from chalice import Blueprint, Response
 from ..auth import verify_auth, redirect_to_login
 from ..data import load_mm_codes, load_data
 from ..repositories.device_data import query_device_data_items
+from ..repositories.message_type import all_message_type_items
 
 extra_routes = Blueprint(__name__)
 
@@ -20,13 +21,17 @@ def home_page():
 
     items = query_device_data_items(device_id)
     code_tables = create_code_tables(items)
+    msg_types = all_message_type_items()
+    msg_types.append({'code': 'free', 'name': '自由入力'})
+    print(msg_types)
 
     html = render_template(
         'home.html',
         device_id=device_id,
         username=username,
         items=items,
-        code_tables=code_tables
+        code_tables=code_tables,
+        msg_types=msg_types
     )
 
     return Response(body=html, status_code=200,

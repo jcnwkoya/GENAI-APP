@@ -31,22 +31,6 @@
         </form>
       </nav>
     </header>
-    <!--
-    <nav class="left">
-      <a>
-        <i>home</i>
-        <div>Home</div>
-      </a>
-      <a>
-        <i>search</i>
-        <div>Search</div>
-      </a>
-      <a>
-        <i>share</i>
-        <div>share</div>
-      </a>
-    </nav>
-    -->
     <main class="responsive">
       <section style="margin-top: 15px">
         <h4 class="small">SN：{{ device_id }} &nbsp; USER：{{ username }}</h4>
@@ -158,14 +142,7 @@
             <div class="grid">
               <div class="s12 m6">
                 <div class="field label suffix border">
-                  <select name="msgtype">
-                    <option>スピリチュアル</option>
-                    <option>フロイト心理学</option>
-                    <option>ユング心理学</option>
-                    <option>アドラー心理学</option>
-                    <option>占星術</option>
-                    <option>禅宗</option>
-                  </select>
+                  <select name="msgtype"></select>
                   <label>メッセージタイプ</label>
                   <i>arrow_drop_down</i>
                 </div>
@@ -208,6 +185,15 @@
                 </fieldset>
               </div>
               <div class="s12 m12">
+                <div class="field textarea border extra">
+                  <textarea
+                    id="promptTextArea"
+                    name="prompt"
+                    disabled
+                  ></textarea>
+                </div>
+              </div>
+              <div class="s12 m12">
                 <button
                   id="generateButton"
                   type="submit"
@@ -235,6 +221,7 @@
     <script>
       window.codeTables = {{ code_tables }};
       window.deviceDataItems = {{ items }};
+      window.messageTypes = {{ msg_types }};
     </script>
     <script src="./assets/home.js"></script>
   </body>

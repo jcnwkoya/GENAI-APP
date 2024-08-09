@@ -1,9 +1,9 @@
 import boto3
 from boto3.dynamodb.conditions import Key
-
+from ..util import aws_resource
 
 dynamodb = boto3.resource('dynamodb')
-table = dynamodb.Table('genai-device-data-poc')
+table = dynamodb.Table(aws_resource('genai-device-data'))
 
 
 def query_device_data_items(device_id):

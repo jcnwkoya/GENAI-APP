@@ -6,14 +6,16 @@
       "api_gateway_stage": "prd",
       "autogen_policy": false,
       "environment_variables": {
-        "PATH_PREFIX": ""
+        "PATH_PREFIX": "",
+        "RES_SUFFIX": "-prd"
       }
     },
     "poc": {
       "api_gateway_stage": "poc",
       "autogen_policy": false,
       "environment_variables": {
-        "PATH_PREFIX": "/poc"
+        "PATH_PREFIX": "/poc",
+        "RES_SUFFIX": "-poc"
       }
     }
   }
