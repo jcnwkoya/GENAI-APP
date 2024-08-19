@@ -2,7 +2,7 @@ from ..template import render_template
 from chalice import Blueprint, Response
 
 from ..auth import verify_auth, redirect_to_login
-from ..data import load_mm_codes, load_data
+from ..data import load_menus, load_mm_codes, load_modes
 from ..repositories.device_data import query_device_data_items
 from ..repositories.message_type import all_message_type_items
 
@@ -22,8 +22,6 @@ def home_page():
     items = query_device_data_items(device_id)
     code_tables = create_code_tables(items)
     msg_types = all_message_type_items()
-    msg_types.append({'code': 'free', 'name': '自由入力'})
-    print(msg_types)
 
     html = render_template(
         'home.html',
@@ -48,8 +46,8 @@ def create_code_tables(items):
         mode_map[item['mode']] = True
 
     mm_codes = filter_dict(load_mm_codes(), mm_code_map)
-    menus = filter_dict(load_data('menu'), menu_map)
-    modes = filter_dict(load_data('mode'), mode_map)
+    menus = filter_dict(load_menus()['label'], menu_map)
+    modes = filter_dict(load_modes(), mode_map)
     return {
         'mmCodes': mm_codes,
         'menus': menus,

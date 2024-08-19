@@ -1,12 +1,11 @@
 import json
 from chalice import Blueprint, Response
-from jinja2 import Template
 from logging import getLogger
 
 from ..ai_services.bedrock import generate_message
 from ..auth import verify_auth
+from ..data import load_menus
 from ..repositories.message_history import put_message_history_item
-from ..repositories.message_type import get_message_type_item
 
 logger = getLogger(__name__)
 
@@ -24,15 +23,15 @@ def post_message():
     body = req.json_body
     words = body.get('words', [])
     ai = body.get('ai', '')
-    msgtype = body.get('msgtype', '')
+    menu = body.get('menu', '')
     msglen = body.get('msglen', 'short')
-    free_prompt = body.get('prompt', '')
+    prompt = body.get('prompt', '')
 
+    prompt_prefix = load_menus()['prompt_prefix'][menu]
+    print(prompt_prefix)
     char_cnt = _message_length(msglen)
     print(char_cnt)
-    print(msgtype)
-    print(free_prompt)
-    prompt = _create_prompt(words, char_cnt, msgtype, free_prompt)
+    prompt = _create_prompt(prompt_prefix, words, char_cnt, prompt)
     print(prompt)
     try:
         # メッセージ生成
@@ -91,15 +90,8 @@ def _message_length(msglen):
         return 50
 
 
-def _create_prompt(words, char_cnt, msgtype, free_prompt):
-    if msgtype == 'free':
-        user_prompt = free_prompt
-    else:
-        msg_type_item = get_message_type_item(msgtype)
-        if msg_type_item is None:
-            return False
-        user_prompt = msg_type_item['userPrompt']
+def _create_prompt(prefix, words, char_cnt, prompt):
+    words_joined = '「' + '」と「'.join(words) + '」'
 
-    words_joined = "と".join(words)
-
-    return f'{words_joined}を感じている人に下記に基づいてポジティブアドバイスを箇条書きではなく自然な文体で{char_cnt}文字程度でしてください\n\n' + user_prompt
+    return prefix + f'{words_joined}を感じている人に下記に基づいてポジティブアドバイスを箇条書きではなく自然な文体で{
+        char_cnt}文字程度でしてください\n\n' + prompt

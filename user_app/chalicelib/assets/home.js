@@ -241,12 +241,7 @@ function setupMessageForm(messageTypes) {
     promptTextArea.value = messageTypes[0].userPrompt;
     messageTypeSelect.onchange = evt => {
         const val = evt.target.value;
-        if (val === 'free') {
-            promptTextArea.disabled = false;
-        } else {
-            promptTextArea.value = messageTypes.find(item => item.code === val).userPrompt;
-            promptTextArea.disabled = true;
-        }
+        promptTextArea.value = messageTypes.find(item => item.code === val).userPrompt;
     };
 
     // メッセージ生成ボタンの処理
@@ -265,6 +260,12 @@ function setupMessageForm(messageTypes) {
                     return false;
                 }
 
+                const menuSelect = document.querySelector('select[name="menu"]');
+                if (menuSelect.value === 'all') {
+                    alert('メニューを選択してください。');
+                    return false;
+                }
+
                 button.disabled = true;
                 loading.style.display = 'block';
                 msgTextArea.value = '';
@@ -272,9 +273,9 @@ function setupMessageForm(messageTypes) {
                 const body = {
                     words: words,
                     ai: form.ai.value,
-                    msgtype: form.msgtype.value,
+                    menu: Number(menuSelect.value),
                     msglen: form.msglen.value,
-                    prompt: form.msgtype.value === 'free' ? form.prompt.value : undefined,
+                    prompt: form.prompt.value,
                 }
 
                 const res = await fetch('./message', {

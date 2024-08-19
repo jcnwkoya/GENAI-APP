@@ -6,6 +6,30 @@ data_dir = os.path.join(os.path.dirname(__file__), './data')
 cached_data = {}
 
 
+def load_menus():
+    if 'menu' in cached_data:
+        return cached_data['menu']
+
+    file_path = os.path.join(data_dir, 'menu.tsv')
+    label_dict = {}
+    prompt_prefix_dict = {}
+
+    with open(file_path, 'r', encoding='utf-8') as file:
+        tsv_reader = csv.reader(file, delimiter='\t')
+
+        for row in tsv_reader:
+            if len(row) >= 3:  # 少なくとも3列あることを確認
+                key = int(row[0])
+                label_dict[key] = row[1]
+                prompt_prefix_dict[key] = row[2]
+
+    cached_data['menu'] = {
+        'label': label_dict,
+        'prompt_prefix': prompt_prefix_dict
+    }
+    return cached_data['menu']
+
+
 def load_mm_codes():
     if 'mm_code' in cached_data:
         return cached_data['mm_code']
@@ -26,11 +50,11 @@ def load_mm_codes():
     return data_dict
 
 
-def load_data(name):
-    if name in cached_data:
-        return cached_data[name]
+def load_modes():
+    if 'mode' in cached_data:
+        return cached_data['mode']
 
-    file_path = os.path.join(data_dir, f'{name}.tsv')
+    file_path = os.path.join(data_dir, 'mode.tsv')
     data_dict = {}
 
     with open(file_path, 'r', encoding='utf-8') as file:
@@ -42,5 +66,5 @@ def load_data(name):
                 value = row[1]
                 data_dict[key] = value
 
-    cached_data[name] = data_dict
+    cached_data['mode'] = data_dict
     return data_dict
