@@ -39,71 +39,68 @@
       <section>
         <h5 class="small">測定結果</h5>
         <form id="filterForm">
-          <fieldset>
-            <legend>絞り込み条件</legend>
-            <div class="grid">
-              <div class="s12 m6">
-                <div class="field label suffix border">
-                  <select name="menu">
-                    <option value="all">すべて</option>
-                  </select>
-                  <label>測定メニュー</label>
-                  <i>arrow_drop_down</i>
-                </div>
-              </div>
-              <div class="s12 m6">
-                <div class="field label suffix border">
-                  <select name="mode">
-                    <option value="all">すべて</option>
-                  </select>
-                  <label>測定モード</label>
-                  <i>arrow_drop_down</i>
-                </div>
-              </div>
-              <div class="s12 m12">
-                <fieldset>
-                  <legend>検索期間</legend>
-                  <div class="grid">
-                    <nav class="s12 m12">
-                      <label class="radio">
-                        <input type="radio" name="period" value="all" checked />
-                        <span>すべて</span>
-                      </label>
-                      <label class="radio">
-                        <input type="radio" name="period" value="latest" />
-                        <span>最新</span>
-                      </label>
-                      <label class="radio">
-                        <input type="radio" name="period" value="range" />
-                        <span>期間選択</span>
-                      </label>
-                    </nav>
-                    <div class="s12 m6">
-                      <div class="field label border">
-                        <input type="date" name="rangeStartDate" />
-                        <label>期間（開始）</label>
-                      </div>
-                    </div>
-                    <div class="s12 m6">
-                      <div class="field label border">
-                        <input type="date" name="rangeEndDate" />
-                        <label>期間（終了）</label>
-                      </div>
+          <div class="grid">
+            <div class="s12 m12">
+              <fieldset>
+                <legend>検索期間</legend>
+                <div class="grid">
+                  <nav class="s12 m12">
+                    <label class="radio">
+                      <input type="radio" name="period" value="all" checked />
+                      <span>すべて</span>
+                    </label>
+                    <label class="radio">
+                      <input type="radio" name="period" value="latest" />
+                      <span>最新</span>
+                    </label>
+                    <label class="radio">
+                      <input type="radio" name="period" value="range" />
+                      <span>期間選択</span>
+                    </label>
+                  </nav>
+                  <div class="s12 m6">
+                    <div class="field label border">
+                      <input type="date" name="rangeStartDate" />
+                      <label>期間（開始）</label>
                     </div>
                   </div>
-                </fieldset>
-              </div>
-              <div>
-                <button
-                  type="submit"
-                  class="small-round"
-                  style="margin: 8px 2px; width: 280px; max-width: 80%"
-                >
-                  検索
-                </button>
+                  <div class="s12 m6">
+                    <div class="field label border">
+                      <input type="date" name="rangeEndDate" />
+                      <label>期間（終了）</label>
+                    </div>
+                  </div>
+                </div>
+              </fieldset>
+            </div>
+            <div class="s12 m6">
+              <div class="field label suffix border">
+                <select name="menu">
+                  <option value="all">すべて</option>
+                </select>
+                <label>測定メニュー</label>
+                <i>arrow_drop_down</i>
               </div>
             </div>
-          </fieldset>
+            <div class="s12 m6">
+              <div class="field label suffix border">
+                <select name="mode">
+                  <option value="all">すべて</option>
+                </select>
+                <label>測定モード</label>
+                <i>arrow_drop_down</i>
+              </div>
+            </div>
+            <div>
+              <button
+                type="submit"
+                class="small-round"
+                style="margin: 8px 2px; width: 280px; max-width: 80%"
+              >
+                検索
+              </button>
+            </div>
+          </div>
         </form>
         <table id="mmDataTable" class="stripe row-border order-column nowrap">
           <thead>

@@ -109,17 +109,14 @@ const mmSummaryTable = new DataTable('#mmSummaryTable', {
  * 測定データリストの絞り込みフォームのセットアップ
  */
 function setupFilteringMmDataForm(codeTables, dataItems) {
-    // メニューの選択肢をセットアップ
-    const menuSelect = document.querySelector('select[name="menu"]')
+    const menuSelect = document.querySelector('select[name="menu"]');
     Object.entries(codeTables.menus).forEach(([val, name]) => {
         const opt = document.createElement('option');
         opt.textContent = name;
         opt.value = val;
         menuSelect.appendChild(opt);
     });
-
-    // モードの選択肢をセットアップ
-    const modeSelect = document.querySelector('select[name="mode"]')
+    const modeSelect = document.querySelector('select[name="mode"]');
     Object.entries(codeTables.modes).forEach(([val, name]) => {
         const opt = document.createElement('option');
         opt.textContent = name;
@@ -164,41 +161,43 @@ function setupFilteringMmDataForm(codeTables, dataItems) {
         try {
             const form = evt.target;
             if (form.reportValidity()) {
-                if (form.menu.value === 'all' && form.mode.value === 'all' && form.period.value === 'all') {
-                    loadData(dataItems);
-                } else {
-                    const targetMenu = Number(form.menu.value); // all は NaN になる
-                    const targetMode = Number(form.mode.value); // all は NaN になる
-
-                    const isRange = form.period.value === 'range';
+                let results;
+                if (form.period.value === 'latest' && dataItems.length > 0) {
+                    switch (dataItems[0].mode) {
+                        case 0: // エーテル
+                            results = dataItems.slice(0, 20);
+                            break;
+                        case 1: // アストラル
+                            results = dataItems.slice(0, 80);
+                            break;
+                    }
+                } else if (form.period.value === 'range') {
                     const minTs = new Date(form.rangeStartDate.value + 'T00:00:00').getTime() / 1000;
-                    const maxTs = new Date(form.rangeEndDate.value + 'T23:59:59').getTime() / 1000;    
-
-                    let results = dataItems.filter(item => {
-                        if (!isNaN(targetMenu) && item.menu !== targetMenu) return false;
-                        if (!isNaN(targetMode) && item.mode !== targetMode) return false;
-
-                        if (isRange) {
-                            if (item.timestamp < minTs) return false;
-                            if (item.timestamp > maxTs) return false;
-                        }
+                    const maxTs = new Date(form.rangeEndDate.value + 'T23:59:59').getTime() / 1000;  
+                    results = dataItems.filter(item => {
+                        if (item.timestamp < minTs) return false;
+                        if (item.timestamp > maxTs) return false;
                         return true;
                     });
-
-                    if (form.period.value === 'latest' && results.length > 0) {
-                        switch (results[0].mode) {
-                            case 0: // エーテル
-                                results = results.slice(0, 20);
-                                break;
-                            case 1: // アストラル
-                                results = results.slice(0, 80);
-                                break;
-                        }
-                        results
-                    }
-
-                    loadData(results);
+                } else {
+                    results = dataItems;
                 }
+
+                const menuSet = new Set(); // ドロップダウンリストに表示するメニューの集合
+                const modeSet = new Set(); // ドロップダウンリストに表示するモードの集合
+                const targetMenu = Number(form.menu.value); // all は NaN になる
+                const targetMode = Number(form.mode.value); // all は NaN になる
+                results = results.filter(item => {
+                    menuSet.add(item.menu);
+                    modeSet.add(item.mode);
+                    if (!isNaN(targetMenu) && item.menu !== targetMenu) return false;
+                    if (!isNaN(targetMode) && item.mode !== targetMode) return false;
+                    return true;
+                });
+
+                loadData(results);
+                resetSelectOptions(menuSelect, menuSet);
+                resetSelectOptions(modeSelect, modeSet);
             }
         } catch (err) {
             console.error(err);
@@ -207,6 +206,20 @@ function setupFilteringMmDataForm(codeTables, dataItems) {
     };
 
     updateDateFieldsState(); // 初期化処理
+}
+
+/**
+ * ドロップダウンリストの選択肢の表示・非表示切り替え
+ */
+function resetSelectOptions(select, visibleSet) {
+    for (let i = 1; i < select.options.length; i++) {
+        const opt = select.options[i];
+        if (visibleSet.has(Number(opt.value))) {
+            opt.style.display = 'block';
+        } else {
+            opt.style.display = 'none';
+        }
+    }
 }
 
 /**
