@@ -256,13 +256,13 @@ function setupMessageForm(messageTypes) {
                     words.push(word);
                 }
                 if (words.length < 1 || 8 < words.length) {
-                    alert('測定コード統計からワードを選択してください。選択できる測定コードの数は最大8個です。');
+                    showAlert('測定コード統計からワードを選択してください。選択できる測定コードの数は最大8個です。');
                     return false;
                 }
 
                 const menuSelect = document.querySelector('select[name="menu"]');
                 if (menuSelect.value === 'all') {
-                    alert('メニューを選択してください。');
+                    showAlert('メニューを選択してください。');
                     return false;
                 }
 
@@ -329,3 +329,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // 初期ロード
     loadData(window.deviceDataItems);
 });
+
+function showAlert(message) {
+    const span = document.getElementById('snackbarErrMsg');
+    span.textContent = message;
+    ui("#snackbar", 3000);
+}
