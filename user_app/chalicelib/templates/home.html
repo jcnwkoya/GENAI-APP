@@ -8,6 +8,11 @@
     <link rel="stylesheet" href="assets/select.dataTables.css" />
     <script src="assets/datatables.js"></script>
     <script src="assets/dataTables.select.js"></script>
+    <style>
+      .field.textarea.genmsg:not(.min) {
+        ---size: 18rem;
+      }
+    </style>
   </head>
   <body class="light">
     <header>
@@ -197,7 +202,7 @@
                 </button>
               </div>
               <div class="s12 m12">
-                <div class="field textarea border extra">
+                <div class="field textarea border genmsg">
                   <progress
                     id="loadingProgress"
                     class="circle"
