@@ -1,3 +1,4 @@
+// 測定結果テーブル
 const mmDataTable = new DataTable('#mmDataTable', {
     data: [],
     columns: [
@@ -59,6 +60,7 @@ const mmDataTable = new DataTable('#mmDataTable', {
     searching: false,
 });
 
+// 測定コード統計テーブル
 const mmSummaryTable = new DataTable('#mmSummaryTable', {
     data: [],
     columns: [
@@ -108,27 +110,43 @@ mmSummaryTable.on('select deselect', () => {
     updatePrompt();
 });
 
+// メニュー選択
+const menuSelect = document.querySelector('select[name="menu"]');
+
+// モード選択
+const modeSelect = document.querySelector('select[name="mode"]');
+
+// メッセージタイプ選択
+const messageTypeSelect = document.querySelector('select[name="msgtype"]');
+
+// メッセージ生成ボタン
+const generateButton = document.getElementById('generateButton');
+
+/**
+ * selectタグのoption要素を生成します。
+ * @param label 表示ラベル
+ * @param value 値
+ * @returns option要素
+ */
+function createOptionElement(label, value) {
+    const opt = document.createElement('option');
+    opt.textContent = label;
+    opt.value = value;
+    return opt;
+}
+
 /**
  * 測定データリストの絞り込みフォームのセットアップ
  */
 function setupFilteringMmDataForm(codeTables, dataItems) {
-    const menuSelect = document.querySelector('select[name="menu"]');
     Object.entries(codeTables.menus).forEach(([val, item]) => {
-        const opt = document.createElement('option');
-        opt.textContent = item.label;
-        opt.value = val;
-        menuSelect.appendChild(opt);
+        menuSelect.appendChild(createOptionElement(item.label, val));
     });
-    const modeSelect = document.querySelector('select[name="mode"]');
     Object.entries(codeTables.modes).forEach(([val, name]) => {
-        const opt = document.createElement('option');
-        opt.textContent = name;
-        opt.value = val;
-        modeSelect.appendChild(opt);
+        modeSelect.appendChild(createOptionElement(name, val));
     });
 
     // 検索期間のセットアップ
-    const periodRadios = document.querySelectorAll('input[name="period"]');
     const rangeStartDate = document.querySelector('input[name="rangeStartDate"]');
     const rangeEndDate = document.querySelector('input[name="rangeEndDate"]');
 
@@ -142,21 +160,19 @@ function setupFilteringMmDataForm(codeTables, dataItems) {
 
     /**
      * 検索期間のラジオボタン変更時の処理
-     * 開始と終了の入力欄の有効/無効を切り替える
+     * 開始日と終了日選択の有効/無効を切り替える
      */
-    const updateDateFieldsState = () => {
-        const selectedValue = document.querySelector('input[name="period"]:checked')?.value;
-        const isRangeSelected = selectedValue === 'range';
-
-        rangeStartDate.disabled = !isRangeSelected;
-        rangeEndDate.disabled = !isRangeSelected;
-    
+    const updateDateFieldsState = selectedValue => {
+        const rangeNotSelected = selectedValue !== 'range';
         [rangeStartDate, rangeEndDate].forEach(input => {
-            input.parentElement.classList.toggle('disabled', !isRangeSelected);
+            input.disabled = rangeNotSelected;
+            input.parentElement.classList.toggle('disabled', rangeNotSelected);
         });
     }
-    periodRadios.forEach(radio => {
-        radio.addEventListener('change', updateDateFieldsState);
+    document.querySelectorAll('input[name="period"]').forEach(radio => {
+        radio.onchange = evt => {
+            updateDateFieldsState(evt.target.value);
+        };
     });
 
     // 検索ボタンの処理
@@ -215,8 +231,7 @@ function setupFilteringMmDataForm(codeTables, dataItems) {
  * ドロップダウンリストの選択肢の表示・非表示切り替え
  */
 function resetSelectOptions(select, visibleSet) {
-    for (let i = 1; i < select.options.length; i++) {
-        const opt = select.options[i];
+    for (const opt of select.options) {
         if (visibleSet.has(Number(opt.value))) {
             opt.style.display = 'block';
         } else {
@@ -229,21 +244,17 @@ function resetSelectOptions(select, visibleSet) {
  * メッセージ生成フォームのセットアップ
  */
 function setupMessageForm(messageTypes) {
-    const menuSelect = document.querySelector('select[name="menu"]');
-    const messageTypeSelect = document.querySelector('select[name="msgtype"]');
-    const button = document.getElementById('generateButton');
-    const loading = document.getElementById('loadingProgress');
-    const msgTextArea = document.getElementById('messageTextArea');
+    const loadingProgress = document.getElementById('loadingProgress');
+    const messageTextArea = document.getElementById('messageTextArea');
 
     menuSelect.onchange = () => { updatePrompt() };
+
     messageTypes.forEach(item => {
-        const opt = document.createElement('option');
-        opt.textContent = item.name;
-        opt.value = item.code;
-        messageTypeSelect.appendChild(opt);
+        messageTypeSelect.appendChild(createOptionElement(item.name, item.code));
     });
     messageTypeSelect.onchange = () => { updatePrompt(); };
-    document.getElementsByName('msglen').forEach(radio => {
+
+    document.querySelectorAll('input[name="msglen"]').forEach(radio => {
         radio.onchange = () => { updatePrompt() };
     });
 
@@ -252,10 +263,11 @@ function setupMessageForm(messageTypes) {
         (async () => {
             const form = evt.target;
             try {
-                button.disabled = true;
-                loading.style.display = 'block';
-                msgTextArea.value = '';
+                generateButton.disabled = true; // ボタンを無効化して連打防止
+                loadingProgress.style.display = 'block'; // ローディング表示
+                messageTextArea.value = '';
 
+                // メッセージ生成APIを呼び出す
                 const body = {
                     ai: form.ai.value,
                     msglen: Number(form.msglen.value),
@@ -270,13 +282,13 @@ function setupMessageForm(messageTypes) {
                     },
                 })
                 const { message } = await res.json();
-                msgTextArea.value = message;
+                messageTextArea.value = message;
             } catch (err) {
                 showAlert('メッセージ生成に失敗しました。');
                 console.error(err);
             }
-            button.disabled = false;
-            loading.style.display = 'none';
+            generateButton.disabled = false;
+            loadingProgress.style.display = 'none';
         })();
         return false;
     };
@@ -284,6 +296,9 @@ function setupMessageForm(messageTypes) {
     updatePrompt();
 }
 
+/**
+ * 初期データロード
+ */
 function loadData(dataItems) {
     mmDataTable.clear().rows.add(dataItems).draw();
 
@@ -307,64 +322,65 @@ function loadData(dataItems) {
     mmSummaryTable.clear().rows.add(summary).draw();
 }
 
-// 初期化処理
-document.addEventListener('DOMContentLoaded', function() {
-    setupFilteringMmDataForm(window.codeTables, window.deviceDataItems);
-
-    setupMessageForm(window.messageTypes);
-
-    // 初期ロード
-    loadData(window.deviceDataItems);
-});
-
+/**
+ * アラートを表示します。
+ */
 function showAlert(message) {
-    const span = document.getElementById('snackbarErrMsg');
-    span.textContent = message;
+    document.getElementById('snackbarErrMsg').textContent = message;
     ui("#snackbar", 3000);
 }
 
+/**
+ * なんらかのフィールドが変更されたら関連フィールドから選択値を取得して、
+ * テンプレートに値を埋め込んで、プロンプトを更新します。
+ */
 function updatePrompt() {
-    const generateButton = document.getElementById('generateButton');
     const promptTextArea = document.getElementById('promptTextArea');
-    const errMsgSpan = document.getElementById('promptTextAreaErrMsg');
 
     try {
-        const menuVal = document.querySelector('select[name="menu"]').value;
-        if (menuVal === 'all') {
+        // メニューのチェック
+        if (menuSelect.value === 'all') {
             throw new Error('測定メニューを選択してください。');
         }
 
+        // 統計テーブルから選択された言葉のリストを取得
         const selectedRows = mmSummaryTable.rows('.selected').data();
         if (selectedRows.length < 1) {
             throw new Error('測定コード統計から言葉を選択してください。');
         } else if (selectedRows.length > 8) {
             throw new Error('測定コード統計から選択できる言葉の数は8個までです。');
         }
+        const words = selectedRows.map(row => codeTables.mmCodes[row.mmCode]);
 
-        const selectedWords = [];
-        for (let i = 0; i < selectedRows.length; i++) {
-            const word = codeTables.mmCodes[selectedRows[i].mmCode];
-            selectedWords.push(word);
-        }
-
-        const msgTypeVal = document.querySelector('select[name="msgtype"]').value;
-        const tmpl = messageTypes.find(item => item.code === msgTypeVal).userPrompt;
+        // プロンプトテンプレート
+        const tmpl = messageTypes.find(item => item.code === messageTypeSelect.value).userPrompt;
 
         const vars = {
-            menu: codeTables.menus[Number(menuVal)].prompt,
-            words: selectedWords.map(w => `「${w}」`).join(','),
+            menu: codeTables.menus[Number(menuSelect.value)].prompt,
+            words: words.map(w => `「${w}」`).join(','),
             charnum: document.querySelector('input[name="msglen"]:checked').value,
         };
         const result = tmpl.replace(/\$\{([^}]+)\}/g, (_, prop) => vars[prop]);
 
+        // 生成ボタンを有効化してエラー表示を消去
         generateButton.disabled = false;
         promptTextArea.value = result;
-        errMsgSpan.textContent = '';
-        $(promptTextArea).parent().removeClass('invalid');
+        promptTextArea.nextElementSibling.textContent = '';
+        promptTextArea.parentElement.classList.remove('invalid');
     } catch (err) {
+        // 生成ボタンを無効化してエラーメッセージを表示
         generateButton.disabled = true;
         promptTextArea.value = '';
-        errMsgSpan.textContent = err.message;
-        $(promptTextArea).parent().addClass('invalid');
+        promptTextArea.nextElementSibling.textContent = err.message;
+        promptTextArea.parentElement.classList.add('invalid');
     }
 }
+
+// 画面ロード後の初期化処理
+window.onload = () => {
+    setupFilteringMmDataForm(window.codeTables, window.deviceDataItems);
+
+    setupMessageForm(window.messageTypes);
+
+    loadData(window.deviceDataItems);
+};
