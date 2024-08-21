@@ -142,80 +142,77 @@
       </section>
       <section>
         <form id="messageForm">
-          <fieldset>
-            <legend>カウンセリングメッセージ</legend>
-            <div class="grid">
-              <div class="s12 m6">
-                <div class="field label suffix border">
-                  <select name="msgtype"></select>
-                  <label>メッセージタイプ</label>
-                  <i>arrow_drop_down</i>
-                </div>
-              </div>
-              <div class="s12 m6">
-                <div class="field label suffix border">
-                  <select name="ai">
-                    <option value="bedrock/claude3-haiku">
-                      Claude 3 Haiku
-                    </option>
-                    <option value="bedrock/claude3-5-sonnet">
-                      Claude 3.5 Sonnet
-                    </option>
-                    <option value="bedrock/mistral-7b">Mistral 7B</option>
-                    <option value="bedrock/llama3-1-8b">
-                      Llama 3.1 Instruct (8B)
-                    </option>
-                  </select>
-                  <label>AI モデル</label>
-                  <i>arrow_drop_down</i>
-                </div>
-              </div>
-              <div class="s12 m12">
-                <fieldset>
-                  <legend>メッセージの長さ</legend>
-                  <nav>
-                    <label class="radio">
-                      <input type="radio" name="msglen" value="short" checked />
-                      <span>一言（50文字程度）</span>
-                    </label>
-                    <label class="radio">
-                      <input type="radio" name="msglen" value="medium" />
-                      <span>短文（200文字程度）</span>
-                    </label>
-                    <label class="radio">
-                      <input type="radio" name="msglen" value="long" />
-                      <span>長文（400文字程度）</span>
-                    </label>
-                  </nav>
-                </fieldset>
-              </div>
-              <div class="s12 m12">
-                <div class="field textarea border extra">
-                  <textarea id="promptTextArea" name="prompt"></textarea>
-                </div>
-              </div>
-              <div class="s12 m12">
-                <button
-                  id="generateButton"
-                  type="submit"
-                  class="small-round"
-                  style="margin: 12px 0px; width: 280px; max-width: 80%"
-                >
-                  メッセージを生成
-                </button>
-              </div>
-              <div class="s12 m12">
-                <div class="field textarea border genmsg">
-                  <progress
-                    id="loadingProgress"
-                    class="circle"
-                    style="display: none"
-                  ></progress>
-                  <textarea id="messageTextArea" readonly></textarea>
-                </div>
+          <h5 class="small">カウンセリングメッセージ</h5>
+          <div class="grid">
+            <div class="s12 m6">
+              <div class="field label suffix border">
+                <select name="msgtype"></select>
+                <label>メッセージタイプ</label>
+                <i>arrow_drop_down</i>
               </div>
             </div>
-          </fieldset>
+            <div class="s12 m6">
+              <div class="field label suffix border">
+                <select name="ai">
+                  <option value="bedrock/claude3-haiku">Claude 3 Haiku</option>
+                  <option value="bedrock/claude3-5-sonnet">
+                    Claude 3.5 Sonnet
+                  </option>
+                  <option value="bedrock/mistral-7b">Mistral 7B</option>
+                  <option value="bedrock/llama3-1-8b">
+                    Llama 3.1 Instruct (8B)
+                  </option>
+                </select>
+                <label>AI モデル</label>
+                <i>arrow_drop_down</i>
+              </div>
+            </div>
+            <div class="s12 m12">
+              <fieldset>
+                <legend>メッセージの長さ</legend>
+                <nav style="flex-wrap: wrap">
+                  <label class="radio">
+                    <input type="radio" name="msglen" value="50" checked />
+                    <span>一言（50文字程度）</span>
+                  </label>
+                  <label class="radio">
+                    <input type="radio" name="msglen" value="200" />
+                    <span>短文（200文字程度）</span>
+                  </label>
+                  <label class="radio">
+                    <input type="radio" name="msglen" value="400" />
+                    <span>長文（400文字程度）</span>
+                  </label>
+                </nav>
+              </fieldset>
+            </div>
+            <div class="s12 m12">
+              <div class="field textarea border extra">
+                <textarea id="promptTextArea" name="prompt"></textarea>
+                <span id="promptTextAreaErrMsg" class="error"></span>
+              </div>
+            </div>
+            <div class="s12 m12">
+              <button
+                id="generateButton"
+                type="submit"
+                class="small-round"
+                style="margin: 12px 0px; width: 280px; max-width: 80%"
+              >
+                メッセージを生成
+              </button>
+            </div>
+            <div class="s12 m12">
+              <div class="field textarea border genmsg">
+                <progress
+                  id="loadingProgress"
+                  class="circle"
+                  style="display: none"
+                ></progress>
+                <textarea id="messageTextArea" readonly></textarea>
+              </div>
+            </div>
+          </div>
         </form>
       </section>
     </main>

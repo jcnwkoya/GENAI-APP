@@ -20,7 +20,7 @@ const mmDataTable = new DataTable('#mmDataTable', {
             className: 'dt-head-left dt-body-left',
             render: function(data, type, row) {
               if (type === 'display') {
-                return codeTables.menus[data] || data;
+                return codeTables.menus[data].label || data;
               }
               return data;
             }
@@ -104,15 +104,18 @@ const mmSummaryTable = new DataTable('#mmSummaryTable', {
         selector: 'td:first-child'
     }
 });
+mmSummaryTable.on('select deselect', () => {
+    updatePrompt();
+});
 
 /**
  * 測定データリストの絞り込みフォームのセットアップ
  */
 function setupFilteringMmDataForm(codeTables, dataItems) {
     const menuSelect = document.querySelector('select[name="menu"]');
-    Object.entries(codeTables.menus).forEach(([val, name]) => {
+    Object.entries(codeTables.menus).forEach(([val, item]) => {
         const opt = document.createElement('option');
-        opt.textContent = name;
+        opt.textContent = item.label;
         opt.value = val;
         menuSelect.appendChild(opt);
     });
@@ -226,55 +229,36 @@ function resetSelectOptions(select, visibleSet) {
  * メッセージ生成フォームのセットアップ
  */
 function setupMessageForm(messageTypes) {
+    const menuSelect = document.querySelector('select[name="menu"]');
     const messageTypeSelect = document.querySelector('select[name="msgtype"]');
     const button = document.getElementById('generateButton');
     const loading = document.getElementById('loadingProgress');
-    const promptTextArea = document.getElementById('promptTextArea');
     const msgTextArea = document.getElementById('messageTextArea');
 
+    menuSelect.onchange = () => { updatePrompt() };
     messageTypes.forEach(item => {
         const opt = document.createElement('option');
         opt.textContent = item.name;
         opt.value = item.code;
         messageTypeSelect.appendChild(opt);
     });
-    promptTextArea.value = messageTypes[0].userPrompt;
-    messageTypeSelect.onchange = evt => {
-        const val = evt.target.value;
-        promptTextArea.value = messageTypes.find(item => item.code === val).userPrompt;
-    };
+    messageTypeSelect.onchange = () => { updatePrompt(); };
+    document.getElementsByName('msglen').forEach(radio => {
+        radio.onchange = () => { updatePrompt() };
+    });
 
     // メッセージ生成ボタンの処理
     document.getElementById('messageForm').onsubmit = evt => {
         (async () => {
             const form = evt.target;
             try {
-                const selectedRows = mmSummaryTable.rows('.selected').data();
-                const words = [];
-                for (let i = 0; i < selectedRows.length; i++) {
-                    const word = codeTables.mmCodes[selectedRows[i].mmCode];
-                    words.push(word);
-                }
-                if (words.length < 1 || 8 < words.length) {
-                    showAlert('測定コード統計からワードを選択してください。選択できる測定コードの数は最大8個です。');
-                    return false;
-                }
-
-                const menuSelect = document.querySelector('select[name="menu"]');
-                if (menuSelect.value === 'all') {
-                    showAlert('メニューを選択してください。');
-                    return false;
-                }
-
                 button.disabled = true;
                 loading.style.display = 'block';
                 msgTextArea.value = '';
 
                 const body = {
-                    words: words,
                     ai: form.ai.value,
-                    menu: Number(menuSelect.value),
-                    msglen: form.msglen.value,
+                    msglen: Number(form.msglen.value),
                     prompt: form.prompt.value,
                 }
 
@@ -287,14 +271,17 @@ function setupMessageForm(messageTypes) {
                 })
                 const { message } = await res.json();
                 msgTextArea.value = message;
-            } catch (e) {
-                console.error(e);
+            } catch (err) {
+                showAlert('メッセージ生成に失敗しました。');
+                console.error(err);
             }
             button.disabled = false;
             loading.style.display = 'none';
         })();
         return false;
     };
+
+    updatePrompt();
 }
 
 function loadData(dataItems) {
@@ -334,4 +321,50 @@ function showAlert(message) {
     const span = document.getElementById('snackbarErrMsg');
     span.textContent = message;
     ui("#snackbar", 3000);
+}
+
+function updatePrompt() {
+    const generateButton = document.getElementById('generateButton');
+    const promptTextArea = document.getElementById('promptTextArea');
+    const errMsgSpan = document.getElementById('promptTextAreaErrMsg');
+
+    try {
+        const menuVal = document.querySelector('select[name="menu"]').value;
+        if (menuVal === 'all') {
+            throw new Error('測定メニューを選択してください。');
+        }
+
+        const selectedRows = mmSummaryTable.rows('.selected').data();
+        if (selectedRows.length < 1) {
+            throw new Error('測定コード統計から言葉を選択してください。');
+        } else if (selectedRows.length > 8) {
+            throw new Error('測定コード統計から選択できる言葉の数は8個までです。');
+        }
+
+        const selectedWords = [];
+        for (let i = 0; i < selectedRows.length; i++) {
+            const word = codeTables.mmCodes[selectedRows[i].mmCode];
+            selectedWords.push(word);
+        }
+
+        const msgTypeVal = document.querySelector('select[name="msgtype"]').value;
+        const tmpl = messageTypes.find(item => item.code === msgTypeVal).userPrompt;
+
+        const vars = {
+            menu: codeTables.menus[Number(menuVal)].prompt,
+            words: selectedWords.map(w => `「${w}」`).join(','),
+            charnum: document.querySelector('input[name="msglen"]:checked').value,
+        };
+        const result = tmpl.replace(/\$\{([^}]+)\}/g, (_, prop) => vars[prop]);
+
+        generateButton.disabled = false;
+        promptTextArea.value = result;
+        errMsgSpan.textContent = '';
+        $(promptTextArea).parent().removeClass('invalid');
+    } catch (err) {
+        generateButton.disabled = true;
+        promptTextArea.value = '';
+        errMsgSpan.textContent = err.message;
+        $(promptTextArea).parent().addClass('invalid');
+    }
 }

@@ -11,8 +11,7 @@ def load_menus():
         return cached_data['menu']
 
     file_path = os.path.join(data_dir, 'menu.tsv')
-    label_dict = {}
-    prompt_prefix_dict = {}
+    data_dict = {}
 
     with open(file_path, 'r', encoding='utf-8') as file:
         tsv_reader = csv.reader(file, delimiter='\t')
@@ -20,14 +19,13 @@ def load_menus():
         for row in tsv_reader:
             if len(row) >= 3:  # 少なくとも3列あることを確認
                 key = int(row[0])
-                label_dict[key] = row[1]
-                prompt_prefix_dict[key] = row[2]
+                data_dict[key] = {
+                    'label': row[1],
+                    'prompt': row[2],
+                }
 
-    cached_data['menu'] = {
-        'label': label_dict,
-        'prompt_prefix': prompt_prefix_dict
-    }
-    return cached_data['menu']
+    cached_data['menu'] = data_dict
+    return data_dict
 
 
 def load_mm_codes():

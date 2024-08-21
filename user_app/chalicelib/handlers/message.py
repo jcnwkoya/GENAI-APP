@@ -4,7 +4,6 @@ from logging import getLogger
 
 from ..ai_services.bedrock import generate_message
 from ..auth import verify_auth
-from ..data import load_menus
 from ..repositories.message_history import put_message_history_item
 
 logger = getLogger(__name__)
@@ -21,18 +20,10 @@ def post_message():
 
     device_id = auth_res['device_id']
     body = req.json_body
-    words = body.get('words', [])
     ai = body.get('ai', '')
-    menu = body.get('menu', '')
-    msglen = body.get('msglen', 'short')
+    msglen = body.get('msglen', 0)
     prompt = body.get('prompt', '')
 
-    prompt_prefix = load_menus()['prompt_prefix'][menu]
-    print(prompt_prefix)
-    char_cnt = _message_length(msglen)
-    print(char_cnt)
-    prompt = _create_prompt(prompt_prefix, words, char_cnt, prompt)
-    print(prompt)
     try:
         # メッセージ生成
         model = False
@@ -56,7 +47,7 @@ def post_message():
                 headers={'Content-Type': 'application/json'}
             )
 
-        message = generate_message(region, model, prompt, char_cnt)
+        message = generate_message(region, model, prompt, msglen)
         logger.info('Succeeded to generate message', {
             'device_id': device_id,
             'prompt': prompt,
@@ -77,21 +68,3 @@ def post_message():
             status_code=500,
             headers={'Content-Type': 'application/json'}
         )
-
-
-def _message_length(msglen):
-    if msglen == 'short':
-        return 50
-    elif msglen == 'medium':
-        return 200
-    elif msglen == 'long':
-        return 400
-    else:
-        return 50
-
-
-def _create_prompt(prefix, words, char_cnt, prompt):
-    words_joined = '「' + '」と「'.join(words) + '」'
-
-    return prefix + f'{words_joined}を感じている人に下記に基づいてポジティブアドバイスを箇条書きではなく自然な文体で{
-        char_cnt}文字程度でしてください\n\n' + prompt

@@ -46,7 +46,7 @@ def create_code_tables(items):
         mode_map[item['mode']] = True
 
     mm_codes = filter_dict(load_mm_codes(), mm_code_map)
-    menus = filter_dict(load_menus()['label'], menu_map)
+    menus = filter_dict(load_menus(), menu_map)
     modes = filter_dict(load_modes(), mode_map)
     return {
         'mmCodes': mm_codes,
