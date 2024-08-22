@@ -11,7 +11,7 @@ const mmDataTable = new DataTable('#mmDataTable', {
             className: 'dt-head-left dt-body-left',
             render: function(data, type, row) {
                 if (type === 'display') {
-                  return new Date(data * 1000).toLocaleString();
+                  return new Date(data).toLocaleString();
                 }
                 return data;
               }
@@ -150,8 +150,8 @@ function setupFilteringMmDataForm(codeTables, dataItems) {
     const rangeStartDate = document.querySelector('input[name="rangeStartDate"]');
     const rangeEndDate = document.querySelector('input[name="rangeEndDate"]');
 
-    const startDate = new Date(dataItems.at(-1).timestamp * 1000).toLocaleDateString('sv-SE');
-    const endDate = new Date(dataItems[0].timestamp * 1000).toLocaleDateString('sv-SE');
+    const startDate = new Date(dataItems.at(-1).timestamp).toLocaleDateString('sv-SE');
+    const endDate = new Date(dataItems[0].timestamp).toLocaleDateString('sv-SE');
 
     rangeStartDate.min = rangeEndDate.min = startDate;
     rangeStartDate.max = rangeEndDate.max = endDate;
@@ -191,8 +191,8 @@ function setupFilteringMmDataForm(codeTables, dataItems) {
                             break;
                     }
                 } else if (form.period.value === 'range') {
-                    const minTs = new Date(form.rangeStartDate.value + 'T00:00:00').getTime() / 1000;
-                    const maxTs = new Date(form.rangeEndDate.value + 'T23:59:59').getTime() / 1000;  
+                    const minTs = new Date(form.rangeStartDate.value + 'T00:00:00').getTime();
+                    const maxTs = new Date(form.rangeEndDate.value + 'T23:59:59').getTime();
                     results = dataItems.filter(item => {
                         if (item.timestamp < minTs) return false;
                         if (item.timestamp > maxTs) return false;
