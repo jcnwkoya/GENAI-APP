@@ -246,6 +246,7 @@ function resetSelectOptions(select, visibleSet) {
 function setupMessageForm(messageTypes) {
     const loadingProgress = document.getElementById('loadingProgress');
     const messageTextArea = document.getElementById('messageTextArea');
+    const speakButton = document.getElementById('speakButton');
 
     menuSelect.onchange = () => { updatePrompt() };
 
@@ -283,6 +284,7 @@ function setupMessageForm(messageTypes) {
                 })
                 const { message } = await res.json();
                 messageTextArea.value = message;
+                speakButton.disabled = false;
             } catch (err) {
                 showAlert('メッセージ生成に失敗しました。');
                 console.error(err);
@@ -294,6 +296,27 @@ function setupMessageForm(messageTypes) {
     };
 
     updatePrompt();
+
+    let utterance = null;
+    speakButton.onclick = () => {
+        (() => {
+            if (utterance) {
+                // 再生中は停止
+                speechSynthesis.cancel();
+                utterance = null;
+                return;
+            } else {
+                // 再生を開始
+                utterance = new SpeechSynthesisUtterance(messageTextArea.value);
+                utterance.lang = 'ja-JP';
+                speechSynthesis.speak(utterance);
+                utterance.onend = () => {
+                    utterance = null;
+                };
+            }
+        })();
+        return false;
+    };
 }
 
 /**
