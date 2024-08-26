@@ -309,6 +309,13 @@ function setupMessageForm(messageTypes) {
                 // 再生を開始
                 utterance = new SpeechSynthesisUtterance(messageTextArea.value);
                 utterance.lang = 'ja-JP';
+
+                // Microsoft Keita Online があればセット
+                const msKeitaVoice = speechSynthesis.getVoices().find(voice => voice.name.startsWith("Microsoft Keita Online"));
+                if (msKeitaVoice) {
+                    utterance.voice = msKeitaVoice;
+                }
+
                 speechSynthesis.speak(utterance);
                 utterance.onend = () => {
                     utterance = null;
@@ -317,6 +324,9 @@ function setupMessageForm(messageTypes) {
         })();
         return false;
     };
+
+    // 音声の事前ロード（時間がかかるため読み上げ直前だと取れない）
+    speechSynthesis.getVoices()
 }
 
 /**
