@@ -225,6 +225,30 @@ function setupFilteringMmDataForm(codeTables, dataItems) {
     };
 
     updateDateFieldsState(); // 初期化処理
+
+    document.getElementById('exportButton').onclick = () => {
+        try {
+            const headers = mmDataTable.columns().header().map(d => d.textContent).toArray().slice(1)
+            let content = headers.join(',') + '\r\n';
+
+            mmDataTable.rows().every(function (idx, tableLoop, rowLoop ) {
+                const data = mmDataTable.cells(idx, '').render('display').toArray().slice(1)
+                content += data.join(',') + '\r\n';
+            });
+
+            const a = document.createElement('a');
+            const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
+            a.href = URL.createObjectURL(new Blob([bom, content], { type: 'application/octet-stream' }));
+            const datestr = new Date().toLocaleDateString('sv-SE').replaceAll("-", '');
+            a.setAttribute('download', `mdatabase${datestr}.csv`);
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        } catch (err) {
+            console.error(err);
+        }
+        return false;
+    };
 }
 
 /**
