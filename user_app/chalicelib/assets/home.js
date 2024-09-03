@@ -256,6 +256,8 @@ function setupFilteringMmDataForm(codeTables, dataItems) {
  */
 function resetSelectOptions(select, visibleSet) {
     for (const opt of select.options) {
+        if (opt.value === 'all') continue; // すべては常に表示
+
         if (visibleSet.has(Number(opt.value))) {
             opt.style.display = 'block';
         } else {
