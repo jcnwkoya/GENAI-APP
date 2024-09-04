@@ -41,7 +41,12 @@
     </header>
     <main class="responsive">
       <section style="margin-top: 15px">
-        <h4 class="small">SN：{{ device_id }} &nbsp; USER：{{ username }}</h4>
+        <h4 class="small">
+          SN：<span id="deviceId">{{ device_id }}</span> &nbsp; USER：<span
+            id="username"
+            >{{ username }}</span
+          >
+        </h4>
       </section>
       <hr class="large" />
       <section>

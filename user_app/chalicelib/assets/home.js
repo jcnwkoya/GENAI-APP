@@ -228,8 +228,12 @@ function setupFilteringMmDataForm(codeTables, dataItems) {
 
     document.getElementById('exportButton').onclick = () => {
         try {
+            const deviceId = document.getElementById('deviceId').textContent;
+            const username = document.getElementById('username').textContent;
+            let content = `SN,${deviceId},USER,${username}\r\n`;
+
             const headers = mmDataTable.columns().header().map(d => d.textContent).toArray().slice(1)
-            let content = headers.join(',') + '\r\n';
+            content += headers.join(',') + '\r\n';
 
             mmDataTable.rows().every(function (idx, tableLoop, rowLoop ) {
                 const data = mmDataTable.cells(idx, '').render('display').toArray().slice(1)
