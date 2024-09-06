@@ -360,6 +360,62 @@ function setupMessageForm(messageTypes) {
 }
 
 /**
+ * 本体制御フォームのセットアップ
+ */
+function setupControlForm() {
+    const commandButton = document.getElementById('commandButton');
+
+    // コマンド送信ボタンの処理
+    document.getElementById('controlForm').onsubmit = evt => {
+        (async () => {
+            const form = evt.target;
+            try {
+                commandButton.disabled = true; // ボタンを無効化して連打防止
+
+                const fnc = form.fnc.value;
+                const body = { fnc };
+
+                // 測定コード送出のとき、統計テーブルから選択コード配列をセット
+                if (fnc === 'cde') {
+                    body.mmcodes = getSelectedSummaryTableRows().map(row => row.mmCode);
+                }
+
+                // 測定コード、メッセージ内容、メニューNo. のときメニュー値をセット
+                switch (fnc) {
+                    case 'cde':
+                    case 'msg':
+                    case 'mnu':
+                        {
+                            // メニュー値をセット
+                            if (menuSelect.value === 'all') {
+                                throw new Error('測定メニューを選択してください。');
+                            }
+                            body.menu = menuSelect.value;
+                        }
+                        break;
+                }
+
+                // コマンド送信APIを呼び出す
+                const res = await fetch('./command', {
+                    method: 'POST',
+                    body: JSON.stringify(body),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                })
+                await res.json();
+                commandButton.disabled = false;
+            } catch (err) {
+                showAlert(err.message || 'コマンドの送信に失敗しました。');
+                console.error(err);
+            }
+            commandButton.disabled = false;
+        })();
+        return false;
+    };
+}
+
+/**
  * 初期データロード
  */
 function loadData(dataItems) {
@@ -407,13 +463,7 @@ function updatePrompt() {
         }
 
         // 統計テーブルから選択された言葉のリストを取得
-        const selectedRows = mmSummaryTable.rows('.selected').data();
-        if (selectedRows.length < 1) {
-            throw new Error('測定コード統計から言葉を選択してください。');
-        } else if (selectedRows.length > 8) {
-            throw new Error('測定コード統計から選択できる言葉の数は8個までです。');
-        }
-        const words = selectedRows.map(row => codeTables.mmCodes[row.mmCode]);
+        const words = getSelectedSummaryTableRows().map(row => codeTables.mmCodes[row.mmCode]);
 
         // プロンプトテンプレート
         const tmpl = messageTypes.find(item => item.code === messageTypeSelect.value).userPrompt;
@@ -439,11 +489,26 @@ function updatePrompt() {
     }
 }
 
+/**
+ * 統計テーブルから選択された行リストを取得します。
+ */
+function getSelectedSummaryTableRows() {
+    const selectedRows = mmSummaryTable.rows('.selected').data();
+    if (selectedRows.length < 1) {
+        throw new Error('測定コード統計から言葉を選択してください。');
+    } else if (selectedRows.length > 8) {
+        throw new Error('測定コード統計から選択できる言葉の数は8個までです。');
+    }
+    return Array.from(selectedRows);
+}
+
 // 画面ロード後の初期化処理
 window.onload = () => {
     setupFilteringMmDataForm(window.codeTables, window.deviceDataItems);
 
     setupMessageForm(window.messageTypes);
+
+    setupControlForm();
 
     loadData(window.deviceDataItems);
 };

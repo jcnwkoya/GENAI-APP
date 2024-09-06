@@ -227,6 +227,41 @@
           </div>
         </form>
       </section>
+      <section>
+        <form id="controlForm">
+          <h5 class="small">本体制御</h5>
+          <div class="grid">
+            <div class="s12 m12">
+              <div class="field label suffix border">
+                <select name="fnc">
+                  <option value="cde">測定コード送出</option>
+                  <option value="msg">メッセージ送出</option>
+                  <option value="mnu">メニューNo.</option>
+                  <option value="imp">測定コード転写</option>
+                  <option value="sht">ショート</option>
+                  <option value="lng">ロング</option>
+                  <option value="hel">ヒーリング</option>
+                  <option value="sta">スタート</option>
+                  <option value="stp">ストップ</option>
+                  <option value="ret">戻る</option>
+                </select>
+                <label>操作内容</label>
+                <i>arrow_drop_down</i>
+              </div>
+            </div>
+            <div class="s12 m12">
+              <button
+                id="commandButton"
+                type="submit"
+                class="small-round"
+                style="margin: 12px 0px; width: 280px; max-width: 80%"
+              >
+                本体操作
+              </button>
+            </div>
+          </div>
+        </form>
+      </section>
     </main>
     <script>
       window.codeTables = {{ code_tables }};
