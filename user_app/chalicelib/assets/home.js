@@ -377,7 +377,7 @@ function setupControlForm() {
 
                 // 測定コード送出のとき、統計テーブルから選択コード配列をセット
                 if (fnc === 'cde') {
-                    body.mmcodes = getSelectedSummaryTableRows().map(row => row.mmCode);
+                    body.mmcodes = getSelectedSummaryTableRows().map(row => ({ code: row.mmCode, count: row.count }));
                 }
 
                 // 測定コード、メッセージ内容、メニューNo. のときメニュー値をセット
