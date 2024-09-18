@@ -129,6 +129,15 @@
         </table>
         <div>
           <button id="exportButton" class="small-round">ファイルに保存</button>
+          <button id="deleteButton" data-ui="#dialog-delete" class="small-round">削除</button>
+          <dialog id="dialog-delete" class="modal">
+            <h5>測定データの削除</h5>
+            <div>リストに表示されている測定データを全て削除します。</div>
+            <nav class="right-align no-space">
+              <button data-ui="#dialog-delete" class="transparent link">キャンセル</button>
+              <button data-ui="#dialog-delete" id="runDeleteButton">実行</button>
+            </nav>
+          </dialog>
         </div>
       </section>
       <section style="margin-top: 32px; max-width: 640px">

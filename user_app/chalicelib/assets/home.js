@@ -253,6 +253,42 @@ function setupFilteringMmDataForm(codeTables, dataItems) {
         }
         return false;
     };
+
+    document.getElementById('runDeleteButton').onclick = () => {
+        (async () => {
+            // ホーム画面の削除ボタン
+            const deleteButton = document.getElementById('deleteButton');
+            deleteButton.disabled = true;
+            try {
+                // リストに表示しているデータのタイムスタンプの配列を取得
+                const tss = [];
+                mmDataTable.rows().every(function () {
+                    tss.push(this.data().timestamp);
+                });
+
+                const res = await fetch('./device/data/delete', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        timestamps: tss
+                    }),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                })
+                const { deleted_timestamps, message } = await res.json();
+                deleteFromData(window.deviceDataItems, deleted_timestamps); // メモリ上のデータから削除
+                deleteFromData(currentData, deleted_timestamps); // リスト表示中のデータから削除
+                loadData(currentData); // リストを更新（全て削除されていれば空になる）
+                if (message) {
+                    showAlert(message); // エラー時はメッセージを表示する
+                }
+            } catch (err) {
+                console.error(err);
+            }
+            deleteButton.disabled = false;
+        })();
+        return false;
+    };
 }
 
 /**
@@ -416,9 +452,10 @@ function setupControlForm() {
 }
 
 /**
- * 初期データロード
+ * 測定データを表にロードします。さらに合わせて測定コード統計を更新します。
  */
 function loadData(dataItems) {
+    currentData = dataItems;
     mmDataTable.clear().rows.add(dataItems).draw();
 
     const mmCodeCountMap = {}
@@ -440,6 +477,7 @@ function loadData(dataItems) {
         });
     mmSummaryTable.clear().rows.add(summary).draw();
 }
+let currentData = null;
 
 /**
  * アラートを表示します。
@@ -500,6 +538,21 @@ function getSelectedSummaryTableRows() {
         throw new Error('測定コード統計から選択できる言葉の数は8個までです。');
     }
     return Array.from(selectedRows);
+}
+
+/**
+ * 測定データ配列から指定された日時の項目を全て削除します。
+ *
+ * @param dataItems 削除元のデータの配列
+ * @param timestamps 削除する測定日時の配列
+ */
+function deleteFromData(dataItems, timestamps) {
+    for (const ts of timestamps) {
+        const idx = dataItems.findIndex(item => item.timestamp === ts);
+        if (idx >= 0) {
+            dataItems.splice(idx, 1);
+        }
+    }
 }
 
 // 画面ロード後の初期化処理

@@ -45,3 +45,13 @@ def first_device_data_item(device_id):
     if len(items) == 1:
         return items[0]
     return False
+
+
+def delete_device_data_item(device_id, timestamp):
+    response = table.delete_item(
+        Key={
+            'deviceId': device_id,
+            'timestamp': timestamp
+        }
+    )
+    return response
