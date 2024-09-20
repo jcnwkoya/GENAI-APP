@@ -44,8 +44,8 @@ def post_command():
             data = mnu + code_data + count_data
 
         elif fnc == "msg":
-            # message = body.get('message', '')
-            data = mnu + "HELLO"
+            message = body.get('message', '')
+            data = mnu + message
         elif fnc == "mnu":
             data = mnu
         else:

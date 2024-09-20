@@ -431,6 +431,15 @@ function setupControlForm() {
                         break;
                 }
 
+                // メッセージ内容のときメッセージをセット
+                if (fnc === 'msg') {
+                    const msg = document.getElementById('messageTextArea').value;
+                    if (!msg) {
+                        throw new Error('メッセージは生成されていません。');
+                    }
+                    body.message = msg;
+                }
+
                 // コマンド送信APIを呼び出す
                 const res = await fetch('./command', {
                     method: 'POST',
