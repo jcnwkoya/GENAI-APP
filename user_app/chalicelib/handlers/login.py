@@ -22,8 +22,10 @@ def post_login():
     # password = body.get('password', [''])[0]
 
     if device_id:
+        # 指定されたデバイスIDのデータが1件でも記録されているか確認
         found = first_device_data_item(device_id)
         if found:
+            # 見つかったらログイン成功としてセッションをセット
             set_cookie_header_value = create_session({
                 'device_id': device_id,
                 'username': username,
@@ -59,6 +61,7 @@ def get_login():
 @extra_routes.route('/logout', methods=['POST'],
                     content_types=['application/x-www-form-urlencoded'])
 def post_logout():
+    # セッションを消すためにクッキーをクリア
     return Response(
         body='',
         status_code=302,

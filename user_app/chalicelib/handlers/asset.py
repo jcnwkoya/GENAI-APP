@@ -12,9 +12,11 @@ def serve_static_file(file_path):
     if not os.path.isfile(asset_path):
         return Response(body='File not found', status_code=404)
 
+    # ファイルの内容をまるっと読み込む
     with open(asset_path, 'rb') as f:
         content = f.read()
 
+    # ファイルの拡張子に応じて適切なContent-Typeを設定
     content_type = 'text/plain'
     if file_path.endswith('.js'):
         content_type = 'application/javascript'

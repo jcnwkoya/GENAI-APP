@@ -1,4 +1,6 @@
-// 測定結果テーブル
+/**
+ * 測定結果テーブルの定義と列ごとのレンダリング処理
+ */
 const mmDataTable = new DataTable('#mmDataTable', {
     data: [],
     columns: [
@@ -60,7 +62,9 @@ const mmDataTable = new DataTable('#mmDataTable', {
     searching: false,
 });
 
-// 測定コード統計テーブル
+/**
+ * 測定コード統計テーブルの定義と列ごとのレンダリング処理
+ */
 const mmSummaryTable = new DataTable('#mmSummaryTable', {
     data: [],
     columns: [
@@ -106,6 +110,9 @@ const mmSummaryTable = new DataTable('#mmSummaryTable', {
         selector: 'td:first-child'
     }
 });
+/**
+ * 測定コード統計テーブルの選択および選択解除時の処理
+ */
 mmSummaryTable.on('select deselect', () => {
     updatePrompt();
 });
@@ -139,9 +146,12 @@ function createOptionElement(label, value) {
  * 測定データリストの絞り込みフォームのセットアップ
  */
 function setupFilteringMmDataForm(codeTables, dataItems) {
+    // メニューの選択肢をドロップダウンリストに追加
     Object.entries(codeTables.menus).forEach(([val, item]) => {
         menuSelect.appendChild(createOptionElement(item.label, val));
     });
+
+    // モードの選択肢をドロップダウンリストに追加
     Object.entries(codeTables.modes).forEach(([val, name]) => {
         modeSelect.appendChild(createOptionElement(name, val));
     });
@@ -150,6 +160,7 @@ function setupFilteringMmDataForm(codeTables, dataItems) {
     const rangeStartDate = document.querySelector('input[name="rangeStartDate"]');
     const rangeEndDate = document.querySelector('input[name="rangeEndDate"]');
 
+    // データ上の最初と最後の日付を取得して、検索期間の選択範囲と初期値を設定
     const startDate = new Date(dataItems.at(-1).timestamp).toLocaleDateString('sv-SE');
     const endDate = new Date(dataItems[0].timestamp).toLocaleDateString('sv-SE');
 
@@ -206,6 +217,7 @@ function setupFilteringMmDataForm(codeTables, dataItems) {
                 const modeSet = new Set(); // ドロップダウンリストに表示するモードの集合
                 const targetMenu = Number(form.menu.value); // all は NaN になる
                 const targetMode = Number(form.mode.value); // all は NaN になる
+                // データ内のメニュー、モードの集合を組み立てつつ、選択と一致しない項目を除外して絞り込む
                 results = results.filter(item => {
                     menuSet.add(item.menu);
                     modeSet.add(item.mode);
@@ -214,6 +226,10 @@ function setupFilteringMmDataForm(codeTables, dataItems) {
                     return true;
                 });
 
+                /** 
+                 * 絞り込んだデータの表示と
+                 * メニューとモードのドロップダウンリストの選択肢をそのデータ内のものに更新
+                 */
                 loadData(results);
                 resetSelectOptions(menuSelect, menuSet);
                 resetSelectOptions(modeSelect, modeSet);
@@ -228,20 +244,28 @@ function setupFilteringMmDataForm(codeTables, dataItems) {
 
     document.getElementById('exportButton').onclick = () => {
         try {
+            // CSVの出力処理
+
+            // デバイスIDと名前の先頭行を作成
             const deviceId = document.getElementById('deviceId').textContent;
             const username = document.getElementById('username').textContent;
             let content = `SN,${deviceId},USER,${username}\r\n`;
 
+            // ヘッダ行を追加
             const headers = mmDataTable.columns().header().map(d => d.textContent).toArray().slice(1)
             content += headers.join(',') + '\r\n';
 
+            // データ行を追加
             mmDataTable.rows().every(function (idx, tableLoop, rowLoop ) {
                 const data = mmDataTable.cells(idx, '').render('display').toArray().slice(1)
                 content += data.join(',') + '\r\n';
             });
 
             const a = document.createElement('a');
-            const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
+            const bom = new Uint8Array([0xEF, 0xBB, 0xBF]); // UTF-8 BOM
+
+            // AタグのリンクにデータURI形式でCSVデータをセットして
+            // 疑似的にクリックイベントを発火させてダウンロードさせる
             a.href = URL.createObjectURL(new Blob([bom, content], { type: 'application/octet-stream' }));
             const datestr = new Date().toLocaleDateString('sv-SE').replaceAll("-", '');
             a.setAttribute('download', `mdatabase${datestr}.csv`);
@@ -266,6 +290,7 @@ function setupFilteringMmDataForm(codeTables, dataItems) {
                     tss.push(this.data().timestamp);
                 });
 
+                // データ削除APIを呼び出す
                 const res = await fetch('./device/data/delete', {
                     method: 'POST',
                     body: JSON.stringify({
@@ -314,13 +339,14 @@ function setupMessageForm(messageTypes) {
     const messageTextArea = document.getElementById('messageTextArea');
     const speakButton = document.getElementById('speakButton');
 
-    menuSelect.onchange = () => { updatePrompt() };
-
+    // メッセージタイプの選択肢を追加
     messageTypes.forEach(item => {
         messageTypeSelect.appendChild(createOptionElement(item.name, item.code));
     });
-    messageTypeSelect.onchange = () => { updatePrompt(); };
 
+    // メニュー、メッセージタイプ、メッセージの長さを変更したらプロンプトを更新
+    menuSelect.onchange = () => { updatePrompt() };
+    messageTypeSelect.onchange = () => { updatePrompt(); };
     document.querySelectorAll('input[name="msglen"]').forEach(radio => {
         radio.onchange = () => { updatePrompt() };
     });
@@ -361,8 +387,10 @@ function setupMessageForm(messageTypes) {
         return false;
     };
 
+    // 初期プロンプトのセット
     updatePrompt();
 
+    // 音声読み上げボタンの処理
     let utterance = null;
     speakButton.onclick = () => {
         (() => {
@@ -467,11 +495,14 @@ function loadData(dataItems) {
     currentData = dataItems;
     mmDataTable.clear().rows.add(dataItems).draw();
 
+    // 各測定コードごとに出現ごとにカウントアップして記録
     const mmCodeCountMap = {}
     for (const item of dataItems) {
         const curVal = mmCodeCountMap[item.mmCode];
         mmCodeCountMap[item.mmCode] = curVal === undefined ? 1 : curVal + 1;
     }
+
+    // 表用のマトリックスデータに変換
     const summary = Object.entries(mmCodeCountMap).sort((a, b) => {
             const r = b[1] - a[1]; // 出現回数降順
             if (r === 0) return a[0] - b[0]; // 測定コード昇順

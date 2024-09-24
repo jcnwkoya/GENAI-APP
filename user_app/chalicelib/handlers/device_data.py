@@ -21,6 +21,8 @@ def post_device_data_delete():
     body = req.json_body
     timestamps = body.get("timestamps", [])
 
+    # タイムスタンプ配列に入っている項目を一件ずつデータベースから削除して、
+    # 削除に成功したタイムスタンプを記録してレスポンスに含めます。
     deleted_tss = []
     try:
         for timestamp in timestamps:

@@ -44,11 +44,14 @@ def post_command():
             data = mnu + code_data + count_data
 
         elif fnc == "msg":
+            # メッセージを送出
             message = body.get('message', '')
             data = mnu + message
         elif fnc == "mnu":
+            # メニューを送出
             data = mnu
         else:
+            # その他のコマンドのとき
             data = ""
 
         send_command(device_id, fnc, data, "?")

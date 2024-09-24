@@ -7,12 +7,23 @@ table = dynamodb.Table(aws_resource('genai-device-data'))
 
 
 def query_device_data_items(device_id):
+    """概要
+    DynamoDBデバイスデータテーブルから指定されたデバイスIDのデータを全て取得します。
+
+    Args:
+        device_id (string): デバイスID
+
+    Returns:
+        Array: 測定データ項目の配列
+    """
+    # データベースへ最初の要求
     key_cond = Key('deviceId').eq(device_id)
     response = table.query(
         KeyConditionExpression=key_cond
     )
     items = response['Items']
 
+    # 続きがある場合はLastEvaluatedKeyが存在するので、繰り返し要求
     while 'LastEvaluatedKey' in response:
         response = table.query(
             KeyConditionExpression=key_cond,
@@ -20,11 +31,12 @@ def query_device_data_items(device_id):
         )
         items.extend(response['Items'])
 
+    # 取得した全項目をフィールの型変換をしつつ逆順にします。
     results = []
     i = len(items)
     for item in items:
         transformed_item = {
-            'id': i,
+            'id': i,  # 1始まりのナンバリング
             'timestamp': int(item['timestamp']),
             'mmCode': str(item['mmCode']).zfill(5),  # 先頭0埋め
             'menu': int(item['menu']),
@@ -36,6 +48,15 @@ def query_device_data_items(device_id):
 
 
 def first_device_data_item(device_id):
+    """概要
+    DynamoDBデバイスデータテーブルから指定されたデバイスIDの先頭のデータ1件を取得します。
+
+    Args:
+        device_id (string): デバイスID
+
+    Returns:
+        Item|False: 項目、なければFalse
+    """
     key_cond = Key('deviceId').eq(device_id)
     response = table.query(
         KeyConditionExpression=key_cond,
@@ -48,6 +69,13 @@ def first_device_data_item(device_id):
 
 
 def delete_device_data_item(device_id, timestamp):
+    """概要
+    DynamoDBデバイスデータテーブルから指定されたデバイスIDとタイムスタンプのデータを削除します。
+
+    Args:
+        device_id (string): デバイスID
+        timestamp (int): タイムスタンプ
+    """
     response = table.delete_item(
         Key={
             'deviceId': device_id,

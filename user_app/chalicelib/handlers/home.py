@@ -19,8 +19,13 @@ def home_page():
     device_id = auth_res['device_id']
     username = auth_res['username']
 
+    # デバイスIDが該当の測定データのデータベースから全取得
     items = query_device_data_items(device_id)
+
+    # コード表のロード
     code_tables = create_code_tables(items)
+
+    # メッセージタイプをデータベースからロード
     msg_types = all_message_type_items()
 
     html = render_template(

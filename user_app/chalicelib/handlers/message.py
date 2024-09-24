@@ -25,7 +25,7 @@ def post_message():
     prompt = body.get('prompt', '')
 
     try:
-        # メッセージ生成
+        # aiパラメータからモデルIDとリージョンを確定
         model = False
         if ai == 'bedrock/claude3-haiku':
             model = 'anthropic.claude-3-haiku-20240307-v1:0'
@@ -54,6 +54,7 @@ def post_message():
             'message': message
         })
 
+        # メッセージを履歴に追加
         put_message_history_item(device_id, model, prompt, message)
 
         return Response(
