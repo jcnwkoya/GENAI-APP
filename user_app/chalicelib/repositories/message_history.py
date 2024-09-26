@@ -1,6 +1,6 @@
 import time
 import boto3
-from ..util import aws_resource
+from util import aws_resource
 
 dynamodb = boto3.resource('dynamodb')
 table = dynamodb.Table(aws_resource('genai-message-history'))
@@ -13,7 +13,7 @@ def put_message_history_item(device_id, model, words, message):
     Args:
         device_id (string): デバイスID
         model (string): LLMのモデルID
-        words (Array): 測定コードの日本語名の配列
+        words (list): 測定コードの日本語名の配列
         message (string): メッセージ
     """
     table.put_item(

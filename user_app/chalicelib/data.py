@@ -3,10 +3,17 @@ import csv
 
 data_dir = os.path.join(os.path.dirname(__file__), './data')
 
-cached_data = {}
+cached_data: dict = {}  # データキャッシュのための辞書
 
 
 def load_menus():
+    """概要
+    data/menu.tsv からメニューデータを読み込み、メニューの情報を辞書型で返します。
+    同一のLambdaインスタンス内では初回にキャッシュして以降はそのデータを返します。
+
+    Returns:
+        Dictionary: メニューコードの数値がキー、ラベルとプロンプトの辞書が値の辞書
+    """    
     if 'menu' in cached_data:
         return cached_data['menu']
 
@@ -29,6 +36,13 @@ def load_menus():
 
 
 def load_mm_codes():
+    """概要
+    data/mm_code.tsv から測定コードデータを読み込み、測定コードの情報を辞書型で返します。
+    同一のLambdaインスタンス内では初回にキャッシュして以降はそのデータを返します。
+
+    Returns:
+        Dictionary: 測定コードの5桁の数値文字列がキー、名称が値の辞書
+    """
     if 'mm_code' in cached_data:
         return cached_data['mm_code']
 
@@ -49,6 +63,13 @@ def load_mm_codes():
 
 
 def load_modes():
+    """概要
+    data/mode.tsv からモードデータを読み込み、モードの情報を辞書型で返します。
+    同一のLambdaインスタンス内では初回にキャッシュして以降はそのデータを返します。
+
+    Returns:
+        Dictionary: モードの数値がキー、名称が値の辞書
+    """
     if 'mode' in cached_data:
         return cached_data['mode']
 

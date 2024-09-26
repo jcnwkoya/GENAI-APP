@@ -1,10 +1,10 @@
-from ..template import render_template
+from template import render_template
 from chalice import Blueprint, Response
 
-from ..auth import verify_auth, redirect_to_login
-from ..data import load_menus, load_mm_codes, load_modes
-from ..repositories.device_data import query_device_data_items
-from ..repositories.message_type import all_message_type_items
+from auth import verify_auth, redirect_to_login
+from data import load_menus, load_mm_codes, load_modes
+from repositories.device_data import query_device_data_items
+from repositories.message_type import all_message_type_items
 
 extra_routes = Blueprint(__name__)
 
@@ -42,6 +42,15 @@ def home_page():
 
 
 def create_code_tables(items):
+    """概要
+    各コード表からデータに登場する項目だけを抽出してまとめて返します。
+
+    Args:
+        items (_type_): _description_
+
+    Returns:
+        dict: キーがテーブル名で、値がコード表の辞書
+    """
     mm_code_map = {}
     menu_map = {}
     mode_map = {}
@@ -61,6 +70,16 @@ def create_code_tables(items):
 
 
 def filter_dict(dict, include_map):
+    """概要
+    コード表の辞書から、指定された項目だけを抽出して返します。
+
+    Args:
+        dict (dict): コード表の辞書
+        include_map (dict): 含める項目がキーに入っている辞書
+
+    Returns:
+        dict: キーがコード値で、値がコード名の辞書
+    """
     result_dict = {}
     for val, name in dict.items():
         if val in include_map:

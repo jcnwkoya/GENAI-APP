@@ -1,6 +1,6 @@
 import boto3
 from boto3.dynamodb.conditions import Key
-from ..util import aws_resource
+from util import aws_resource
 
 dynamodb = boto3.resource('dynamodb')
 table = dynamodb.Table(aws_resource('genai-device-data'))
@@ -14,7 +14,7 @@ def query_device_data_items(device_id):
         device_id (string): デバイスID
 
     Returns:
-        Array: 測定データ項目の配列
+        list: 測定データ項目の配列
     """
     # データベースへ最初の要求
     key_cond = Key('deviceId').eq(device_id)
@@ -55,7 +55,7 @@ def first_device_data_item(device_id):
         device_id (string): デバイスID
 
     Returns:
-        Item|False: 項目、なければFalse
+        dict|False: 項目、なければFalse
     """
     key_cond = Key('deviceId').eq(device_id)
     response = table.query(

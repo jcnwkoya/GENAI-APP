@@ -2,9 +2,9 @@ import json
 from chalice import Blueprint, Response
 from logging import getLogger
 
-from ..ai_services.bedrock import generate_message
-from ..auth import verify_auth
-from ..repositories.message_history import put_message_history_item
+from ai_services.bedrock import generate_message
+from auth import verify_auth
+from repositories.message_history import put_message_history_item
 
 logger = getLogger(__name__)
 

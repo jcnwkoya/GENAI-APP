@@ -2,10 +2,10 @@ from chalice import Blueprint, Response
 from urllib.parse import parse_qs
 from logging import getLogger
 
-from ..auth import clear_session, create_session
-from ..repositories.device_data import first_device_data_item
-from ..util import path_resolve
-from ..template import render_template
+from auth import clear_session, create_session
+from repositories.device_data import first_device_data_item
+from util import path_resolve
+from template import render_template
 
 logger = getLogger(__name__)
 

@@ -2,8 +2,8 @@ import json
 from chalice import Blueprint, Response
 from logging import getLogger
 
-from ..auth import verify_auth
-from ..services.iot import send_command
+from auth import verify_auth
+from services.iot import send_command
 
 logger = getLogger(__name__)
 

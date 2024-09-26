@@ -1,4 +1,4 @@
-from .util import path_resolve
+from util import path_resolve
 from chalice import Response
 from http.cookies import SimpleCookie
 from datetime import datetime, timedelta, timezone
