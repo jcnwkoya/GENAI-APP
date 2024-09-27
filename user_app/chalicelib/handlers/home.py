@@ -1,10 +1,10 @@
-from template import render_template
 from chalice import Blueprint, Response
 
-from auth import verify_auth, redirect_to_login
-from data import load_menus, load_mm_codes, load_modes
-from repositories.device_data import query_device_data_items
-from repositories.message_type import all_message_type_items
+from ..auth import verify_auth, redirect_to_login
+from ..data import load_menus, load_mm_codes, load_modes
+from ..repositories.device_data import query_device_data_items
+from ..repositories.message_type import all_message_type_items
+from ..template import render_template
 
 extra_routes = Blueprint(__name__)
 

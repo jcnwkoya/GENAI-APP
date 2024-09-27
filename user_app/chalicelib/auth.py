@@ -1,8 +1,8 @@
-from util import path_resolve
 from chalice import Response
 from http.cookies import SimpleCookie
 from datetime import datetime, timedelta, timezone
 from urllib.parse import parse_qsl, urlencode
+from .util import path_resolve
 
 
 def authorize(device_id):

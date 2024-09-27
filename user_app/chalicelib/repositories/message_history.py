@@ -1,6 +1,6 @@
 import time
 import boto3
-from util import aws_resource
+from ..util import aws_resource
 
 dynamodb = boto3.resource('dynamodb')
 table = dynamodb.Table(aws_resource('genai-message-history'))

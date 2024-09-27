@@ -2,8 +2,8 @@ import json
 from chalice import Blueprint, Response
 from logging import getLogger
 
-from auth import verify_auth
-from repositories.device_data import delete_device_data_item
+from ..auth import verify_auth
+from ..repositories.device_data import delete_device_data_item
 
 logger = getLogger(__name__)
 

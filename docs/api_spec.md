@@ -1,592 +1,604 @@
-# API 仕様
+# API の詳細設計とシーケンス図
 
-## ホームページ API
+## 1. ホームページ表示 API (`/`)
 
-### API 概要
-
-- **メソッド:** GET
-- **パス:** `/`
-- **説明:** ユーザーの認証を検証し、DynamoDB からデバイスデータおよびメッセージタイプを取得してホームページをレンダリングします。
-
-### Mermaid シーケンス図
+### シーケンス図
 
 ```mermaid
 sequenceDiagram
-    participant Client
-    participant API Gateway
-    participant Lambda Function
-    participant Auth Module
-    participant DeviceData Repository
-    participant MessageType Repository
-    participant Template Renderer
+    participant ユーザー
+    participant ブラウザ
+    participant サーバー
+    participant DynamoDB
 
-    Client->>API Gateway: GET /
-    API Gateway->>Lambda Function: Invoke / handler
-    Lambda Function->>Auth Module: verify_auth(request)
-    Auth Module-->>Lambda Function: auth_result
-    alt Auth Success
-        Lambda Function->>DeviceData Repository: query_device_data_items(device_id)
-        DeviceData Repository-->>Lambda Function: device_data
-        Lambda Function->>MessageType Repository: all_message_type_items()
-        MessageType Repository-->>Lambda Function: message_types
-        Lambda Function->>Template Renderer: render_template('home.html', ...)
-        Template Renderer-->>Lambda Function: rendered_html
-        Lambda Function-->>API Gateway: Response (200, rendered_html)
-    else Auth Failure
-        Lambda Function->>Auth Module: redirect_to_login()
-        Auth Module-->>Lambda Function: redirect_response
-        Lambda Function-->>API Gateway: Response (302, redirect)
+    ユーザー->>ブラウザ: ホームページへのリクエスト
+    ブラウザ->>サーバー: GET /
+    サーバー->>サーバー: 認証情報の検証
+    alt 認証成功
+        サーバー->>DynamoDB: デバイスデータの取得
+        DynamoDB-->>サーバー: データの返却
+        サーバー->>サーバー: コード表の生成
+        サーバー->>DynamoDB: メッセージタイプの取得
+        DynamoDB-->>サーバー: メッセージタイプの返却
+        サーバー->>ブラウザ: ホームページHTMLの返却
+    else 認証失敗
+        サーバー->>ブラウザ: ログインページへのリダイレクト
     end
 ```
 
-### 詳細設計書
+### 詳細設計
 
-#### 目的
+#### エンドポイント
 
-ホームページ API は、認証されたユーザーに対してメインインターフェースを提供し、デバイスデータやメッセージタイプを表示します。ユーザーが他の機能と対話できるようにするための画面を提供します。
+- **URL:** `/`
+- **メソッド:** `GET`
+- **目的:** ホームページを表示し、認証されたユーザーのデバイスデータを表示する。
 
-#### インプット
+#### リクエスト
 
-- **リクエストメソッド:** GET
-- **パスパラメータ:** なし
 - **ヘッダー:**
-  - **Cookie:** セッション情報を含む。
+  - `Cookie: session=...`  
+    ユーザーのセッション情報が含まれています。
 
-#### アウトプット
+#### レスポンス
 
-- **成功時:**
+- **認証成功時:**
 
-  - **ステータスコード:** 200 OK
-  - **Content-Type:** text/html;charset=utf-8
-  - **ボディ:** レンダリングされたホームページの HTML コンテンツ。
+  - **ステータスコード:** `200 OK`
+  - **ヘッダー:** `Content-Type: text/html; charset=utf-8`
+  - **ボディ:** `home.html`テンプレートにレンダリングされた HTML。
 
 - **認証失敗時:**
-  - **ステータスコード:** 302 Found
-  - **ヘッダー:**
-    - **Location:** /login
-  - **ボディ:** なし
+  - **ステータスコード:** `302 Found`
+  - **ヘッダー:** `Location: /login`
+  - **ボディ:** 空
 
-#### フロー
+#### 処理の流れ
 
-1. **認証検証:**
+1. **ユーザーがホームページにアクセス。**
+2. **サーバーがセッション情報を検証。**
+   - 有効なセッションがある場合:
+     - DynamoDB からデバイスデータを取得。
+     - データを基に必要なコード表（メニュー、モード、測定コード）を生成。
+     - DynamoDB からメッセージタイプを取得。
+     - 取得したデータを`home.html`テンプレートに埋め込み、HTML を生成。
+     - ブラウザに HTML を返却。
+   - 無効なセッションの場合:
+     - ログインページへリダイレクト。
 
-   - リクエストヘッダーからセッション Cookie を取得。
-   - `verify_auth(request)`を呼び出してセッションを検証。
-   - 認証に失敗した場合、ログインページへのリダイレクト応答を生成。
+---
 
-2. **データ取得:**
+## 2. ログイン API (`/login`)
 
-   - 認証に成功した場合、セッションから`device_id`と`username`を取得。
-   - `query_device_data_items(device_id)`を呼び出してデバイスデータを DynamoDB から取得。
-   - `all_message_type_items()`を呼び出してメッセージタイプを DynamoDB から取得。
-
-3. **テンプレートレンダリング:**
-
-   - `render_template('home.html', ...)`を呼び出して HTML テンプレートをデータでレンダリング。
-
-4. **応答生成:**
-   - レンダリングされた HTML を含む 200 ステータスのレスポンスをクライアントに返却。
-
-#### 依存関係
-
-- **Auth Module (`verify_auth`):** ユーザーの認証を管理。
-- **DeviceData Repository (`query_device_data_items`):** DynamoDB からデバイスデータを取得。
-- **MessageType Repository (`all_message_type_items`):** DynamoDB からメッセージタイプを取得。
-- **Template Renderer (`render_template`):** HTML テンプレートをレンダリング。
-
-## ログインページ API
-
-### API 概要
-
-- **メソッド:** GET
-- **パス:** `/login`
-- **説明:** ログインページをレンダリングします。ログイン失敗時にはエラーメッセージを表示します。
-
-### Mermaid シーケンス図
+### シーケンス図
 
 ```mermaid
 sequenceDiagram
-    participant Client
-    participant API Gateway
-    participant Lambda Function
-    participant Template Renderer
+    participant ユーザー
+    participant ブラウザ
+    participant サーバー
+    participant DynamoDB
 
-    Client->>API Gateway: GET /login
-    API Gateway->>Lambda Function: Invoke /login GET handler
-    Lambda Function->>Template Renderer: render_template('login.html', error=err)
-    Template Renderer-->>Lambda Function: rendered_html
-    Lambda Function-->>API Gateway: Response (200, rendered_html)
-```
-
-### 詳細設計書
-
-#### 目的
-
-ログインページ API は、ユーザーに対してログインフォームを提供し、認証の開始点として機能します。ログイン失敗時にはエラーメッセージを表示することで、ユーザーに適切なフィードバックを提供します。
-
-#### インプット
-
-- **リクエストメソッド:** GET
-- **パスパラメータ:** なし
-- **クエリパラメータ:** `error`（オプション） - ログイン失敗を示すために使用。
-
-#### アウトプット
-
-- **成功時:**
-  - **ステータスコード:** 200 OK
-  - **Content-Type:** text/html;charset=utf-8
-  - **ボディ:** レンダリングされたログインページの HTML コンテンツ。
-
-#### フロー
-
-1. **エラーハンドリング:**
-
-   - クエリパラメータに`error`が含まれているかを確認し、ログイン失敗時のメッセージを表示。
-
-2. **テンプレートレンダリング:**
-
-   - `render_template('login.html', error=err)`を呼び出して HTML テンプレートをレンダリング。
-
-3. **応答生成:**
-   - レンダリングされた HTML を含む 200 ステータスのレスポンスをクライアントに返却。
-
-#### 依存関係
-
-- **Template Renderer (`render_template`):** 'login.html'テンプレートをレンダリング。
-
-## ログイン API
-
-### API 概要
-
-- **メソッド:** POST
-- **パス:** `/login`
-- **説明:** ログインフォームの送信を処理し、ユーザーの認証を行います。認証に成功した場合、セッションを作成しホームページへリダイレクトします。失敗した場合はログインページへエラーメッセージ付きでリダイレクトします。
-
-### Mermaid シーケンス図
-
-```mermaid
-sequenceDiagram
-    participant Client
-    participant API Gateway
-    participant Lambda Function
-    participant Auth Module
-    participant DeviceData Repository
-    participant Session Manager
-
-    Client->>API Gateway: POST /login (form data)
-    API Gateway->>Lambda Function: Invoke /login POST handler
-    Lambda Function->>Auth Module: first_device_data_item(device_id)
-    Auth Module-->>Lambda Function: device_data or False
-    alt Authentication Successful
-        Lambda Function->>Session Manager: create_session({device_id, username})
-        Session Manager-->>Lambda Function: set_cookie
-        Lambda Function->>Client: Response (302, Location=/, Set-Cookie)
-    else Authentication Failed
-        Lambda Function->>Client: Response (302, Location=/login?error=login_failed)
+    ユーザー->>ブラウザ: ログインフォーム入力
+    ユーザー->>ブラウザ: ログインボタンをクリック
+    ブラウザ->>サーバー: POST /login (device_id, username)
+    サーバー->>DynamoDB: 指定デバイスIDのデータ存在確認
+    DynamoDB-->>サーバー: 結果返却
+    alt データ存在
+        サーバー->>ブラウザ: セッションをセットし、ホームページへリダイレクト
+    else データ不存在
+        サーバー->>ブラウザ: ログイン失敗のメッセージとログインページへリダイレクト
     end
 ```
 
-### 詳細設計書
+### 詳細設計
 
-#### 目的
+#### エンドポイント
 
-ログイン送信 API は、ユーザーが入力した認証情報を基に認証を行い、成功時にはセッションを作成してホームページへリダイレクトし、失敗時にはログインページにエラーメッセージを表示します。
+- **URL:** `/login`
+- **メソッド:** `GET`, `POST`
+- **目的:** ユーザーの認証を行い、セッションを作成する。
 
-#### インプット
+#### リクエスト
 
-- **リクエストメソッド:** POST
-- **パスパラメータ:** なし
-- **ヘッダー:**
-  - **Content-Type:** application/x-www-form-urlencoded
-- **ボディパラメータ:**
-  - **device_id:** デバイスの識別子。
-  - **username:** ユーザー名。
-  - **password:** パスワード（コードではコメントアウトされており、未実装）。
+- **GET `/login`:**
 
-#### アウトプット
+  - **目的:** ログインページを表示する。
+  - **リクエスト:** 特になし。
 
-- **成功時:**
-
-  - **ステータスコード:** 302 Found
+- **POST `/login`:**
   - **ヘッダー:**
-    - **Location:** `/`（ホームページ）
-    - **Set-Cookie:** セッション情報を含む Cookie。
-  - **ボディ:** なし
+    - `Content-Type: application/x-www-form-urlencoded`
+  - **ボディ:**
+    - `device_id` (文字列): デバイスの識別子。
+    - `username` (文字列): ユーザー名。
+    - `password` (文字列): 現在は未使用（コメントアウトされている）。
 
-- **失敗時:**
-  - **ステータスコード:** 302 Found
-  - **ヘッダー:**
-    - **Location:** `/login?error=login_failed`
-  - **ボディ:** なし
+#### レスポンス
 
-#### フロー
+- **GET `/login`:**
 
-1. **リクエスト解析:**
+  - **ステータスコード:** `200 OK`
+  - **ヘッダー:** `Content-Type: text/html; charset=utf-8`
+  - **ボディ:** `login.html`テンプレートにレンダリングされた HTML。
 
-   - フォームデータから`device_id`と`username`を抽出。
-   - パスワードフィールドは現在未実装。
+- **POST `/login`:**
+  - **認証成功時:**
+    - **ステータスコード:** `302 Found`
+    - **ヘッダー:**
+      - `Location: /`
+      - `Set-Cookie: session=...; HttpOnly; Secure; SameSite=Strict`
+    - **ボディ:** 空
+  - **認証失敗時:**
+    - **ステータスコード:** `302 Found`
+    - **ヘッダー:**
+      - `Location: /login?error=login_failed`
+    - **ボディ:** 空
 
-2. **認証処理:**
+#### 処理の流れ
 
-   - `first_device_data_item(device_id)`を呼び出してデバイスの存在を確認。
-   - パスワードの検証が必要な場合、ここに実装する予定。
+1. **ユーザーがログインページにアクセス。**
+2. **ログインフォームに`device_id`と`username`を入力。**
+3. **ログインボタンをクリックし、POST リクエストを送信。**
+4. **サーバーが DynamoDB を参照し、`device_id`に該当するデータの存在を確認。**
+   - データが存在する場合:
+     - セッションを作成し、クッキーにセット。
+     - ホームページへリダイレクト。
+   - データが存在しない場合:
+     - ログイン失敗のメッセージを表示し、ログインページへリダイレクト。
 
-3. **セッション作成:**
+---
 
-   - 認証に成功した場合、`create_session`を呼び出してセッション Cookie を生成。
-   - `httponly`、`secure`、`samesite=Strict`属性を設定。
+## 3. ログアウト API (`/logout`)
 
-4. **リダイレクト処理:**
-   - 成功時はホームページへリダイレクト。
-   - 失敗時はログインページへエラーメッセージ付きでリダイレクト。
-
-#### 依存関係
-
-- **Auth Module (`first_device_data_item`, `create_session`):** 認証ロジックとセッション管理を担当。
-- **DeviceData Repository:** DynamoDB とのやり取りを行い、デバイス情報を検証。
-
-## ログアウト API
-
-### API 概要
-
-- **メソッド:** POST
-- **パス:** `/logout`
-- **説明:** ユーザーのセッションをクリアし、ログインページへリダイレクトします。
-
-### Mermaid シーケンス図
+### シーケンス図
 
 ```mermaid
 sequenceDiagram
-    participant Client
-    participant API Gateway
-    participant Lambda Function
-    participant Auth Module
+    participant ユーザー
+    participant ブラウザ
+    participant サーバー
 
-    Client->>API Gateway: POST /logout
-    API Gateway->>Lambda Function: Invoke /logout POST handler
-    Lambda Function->>Auth Module: clear_session()
-    Auth Module-->>Lambda Function: set_cookie (empty with expiration)
-    Lambda Function->>Client: Response (302, Location=/login, Set-Cookie)
+    ユーザー->>ブラウザ: ログアウトボタンをクリック
+    ブラウザ->>サーバー: POST /logout
+    サーバー->>ブラウザ: セッションをクリアし、ログインページへリダイレクト
 ```
 
-### 詳細設計書
+### 詳細設計
 
-#### 目的
+#### エンドポイント
 
-ログアウト API は、ユーザーセッションを安全に終了させ、再度の認証を要求することで、セキュリティを維持します。セッション情報をクリアし、ユーザーをログインページへリダイレクトします。
+- **URL:** `/logout`
+- **メソッド:** `POST`
+- **目的:** ユーザーのセッションを終了し、ログインページにリダイレクトする。
 
-#### インプット
+#### リクエスト
 
-- **リクエストメソッド:** POST
-- **パスパラメータ:** なし
 - **ヘッダー:**
-  - **Cookie:** クリア対象のセッション情報を含む。
 
-#### アウトプット
+  - `Cookie: session=...`  
+    現在のセッション情報が含まれています。
 
-- **レスポンス:**
-  - **ステータスコード:** 302 Found
-  - **ヘッダー:**
-    - **Location:** `/login`
-    - **Set-Cookie:** セッション Cookie を空に設定し、期限切れにする。
-  - **ボディ:** なし
+- **ボディ:**
+  - 特になし。
 
-#### フロー
+#### レスポンス
 
-1. **セッションクリア:**
+- **ステータスコード:** `302 Found`
+- **ヘッダー:**
+  - `Location: /login`
+  - `Set-Cookie: session=; HttpOnly; Secure; SameSite=Strict; Expires=PastDate`
+- **ボディ:** 空
 
-   - `clear_session()`を呼び出し、セッション Cookie を空にし、過去の日時を設定して期限切れにする。
+#### 処理の流れ
 
-2. **リダイレクト処理:**
-   - クライアントをログインページへリダイレクト。
+1. **ユーザーがログアウトボタンをクリック。**
+2. **ブラウザが POST リクエストを`/logout`に送信。**
+3. **サーバーがセッションをクリア（クッキーを削除）し、ログインページへリダイレクト。**
 
-#### 依存関係
+---
 
-- **Auth Module (`clear_session`):** セッションのクリア処理を担当。
+## 4. メッセージ生成 API (`/message`)
 
-## コマンド送信 API
-
-### API 概要
-
-- **メソッド:** POST
-- **パス:** `/command`
-- **説明:** 認証されたユーザーが指定したコマンドを指定のデバイスに送信します。AWS IoT を利用してコマンドをデバイスの MQTT トピックにパブリッシュします。
-
-### Mermaid シーケンス図
+### シーケンス図
 
 ```mermaid
 sequenceDiagram
-    participant Client
-    participant API Gateway
-    participant Lambda Function
-    participant Auth Module
-    participant IoT Service
+    participant ユーザー
+    participant ブラウザ
+    participant サーバー
+    participant Bedrockサービス
+    participant DynamoDB
 
-    Client->>API Gateway: POST /command (command data)
-    API Gateway->>Lambda Function: Invoke /command POST handler
-    Lambda Function->>Auth Module: verify_auth(request)
-    Auth Module-->>Lambda Function: auth_result
-    alt Auth Success
-        Lambda Function->>Lambda Function: Process 'fnc' and 'data' from body
-        Lambda Function->>IoT Service: send_command(device_id, fnc, data, eoc)
-        IoT Service-->>Lambda Function: Publish success/failure
-        alt Publish Success
-            Lambda Function-->>Client: Response (200, {})
-        else Publish Failure
-            Lambda Function->>Client: Response (500, {'command': 'コマンドの送信に失敗しました。'})
-        end
-    else Auth Failure
-        Lambda Function-->>Client: Response (401, 'Unauthorized')
-    end
+    ユーザー->>ブラウザ: メッセージ生成リクエスト
+    ブラウザ->>サーバー: POST /message (ai, msglen, prompt)
+    サーバー->>サーバー: 認証情報の検証
+    サーバー->>Bedrockサービス: メッセージ生成リクエスト
+    Bedrockサービス-->>サーバー: 生成されたメッセージ
+    サーバー->>DynamoDB: メッセージ履歴の保存
+    サーバー->>ブラウザ: 生成されたメッセージの返却
 ```
 
-### 詳細設計書
+### 詳細設計
 
-#### 目的
+#### エンドポイント
 
-コマンド送信 API は、認証されたユーザーが指定したコマンドをデバイスに送信するためのインターフェースを提供します。AWS IoT を利用してコマンドをパブリッシュし、デバイスとの通信を実現します。
+- **URL:** `/message`
+- **メソッド:** `POST`
+- **目的:** 指定された AI モデルとプロンプトを使用してメッセージを生成し、履歴として保存する。
 
-#### インプット
+#### リクエスト
 
-- **リクエストメソッド:** POST
-- **パスパラメータ:** なし
 - **ヘッダー:**
-  - **Cookie:** 認証情報を含む。
-- **ボディパラメータ:**
-  - **fnc:** コマンドの種類を示す文字列（例: 'cde', 'msg', 'mnu'）。
-  - **menu:** メニューコードを示す文字列。先頭をゼロ埋めして 2 文字にする。
-  - **mmcodes:** （オプション）測定コードのリスト。`fnc`が 'cde' の場合に必要。
-  - **message:** （オプション）メッセージ内容。`fnc`が 'msg' の場合に必要。
 
-#### アウトプット
+  - `Content-Type: application/json`
+  - `Cookie: session=...`  
+    ユーザーのセッション情報が含まれています。
+
+- **ボディ:**
+  - `ai` (文字列): 使用する AI モデルの識別子（例: `bedrock/claude3-haiku`）。
+  - `msglen` (整数): 希望するメッセージの文字数。
+  - `prompt` (文字列): メッセージ生成のためのプロンプト。
+
+#### レスポンス
 
 - **成功時:**
 
-  - **ステータスコード:** 200 OK
-  - **Content-Type:** application/json
+  - **ステータスコード:** `200 OK`
+  - **ヘッダー:** `Content-Type: application/json`
+  - **ボディ:**
+    ```json
+    {
+      "message": "生成されたメッセージの内容"
+    }
+    ```
+
+- **認証失敗時:**
+
+  - **ステータスコード:** `401 Unauthorized`
+  - **ボディ:** `Unauthorized`
+
+- **エラー時:**
+  - **ステータスコード:** `400 Bad Request` または `500 Internal Server Error`
+  - **ボディ:**
+    ```json
+    {
+      "message": "AIのメッセージ生成に失敗しました。"
+    }
+    ```
+
+#### 処理の流れ
+
+1. **ユーザーがメッセージ生成フォームに必要な情報を入力。**
+2. **ブラウザが POST リクエストを`/message`に送信。**
+3. **サーバーがセッション情報を検証。**
+4. **指定された AI モデルとプロンプトを使用して Bedrock サービスにメッセージ生成を依頼。**
+5. **Bedrock サービスから生成されたメッセージを受け取る。**
+6. **生成されたメッセージを DynamoDB のメッセージ履歴テーブルに保存。**
+7. **生成されたメッセージをブラウザに返却。**
+
+#### パラメータ詳細
+
+- `ai`:
+
+  - 使用可能なモデル例:
+    - `bedrock/claude3-haiku`
+    - `bedrock/claude3-5-sonnet`
+    - `bedrock/mistral-7b`
+    - `bedrock/llama3-1-8b`
+  - 各モデルには対応する Bedrock の`modelId`と`region`が設定されています。
+
+- `msglen`:
+
+  - 希望するメッセージの文字数。
+  - Bedrock の`maxTokens`パラメータに影響し、`msglen * 3`トークンが設定されます。
+
+- `prompt`:
+  - AI に提供するプロンプトテキスト。
+  - テンプレートに基づいて事前に生成されている場合もあります。
+
+---
+
+## 5. コマンド送信 API (`/command`)
+
+### シーケンス図
+
+```mermaid
+sequenceDiagram
+    participant ユーザー
+    participant ブラウザ
+    participant サーバー
+    participant IoTサービス
+
+    ユーザー->>ブラウザ: コマンド送信アクション
+    ブラウザ->>サーバー: POST /command (fnc, data)
+    サーバー->>サーバー: 認証情報の検証
+    サーバー->>IoTサービス: コマンド送信リクエスト
+    IoTサービス-->>サーバー: 送信結果
+    サーバー->>ブラウザ: 送信結果の返却
+```
+
+### 詳細設計
+
+#### エンドポイント
+
+- **URL:** `/command`
+- **メソッド:** `POST`
+- **目的:** 指定された機能コードに基づいてデバイスにコマンドを送信する。
+
+#### リクエスト
+
+- **ヘッダー:**
+
+  - `Content-Type: application/json`
+  - `Cookie: session=...`  
+    ユーザーのセッション情報が含まれています。
+
+- **ボディ:**
+  - `fnc` (文字列): コマンドの機能コード。例: `cde`（測定コード送出）、`msg`（メッセージ送出）、`mnu`（メニュー送出）など。
+  - 以下、`fnc`の値に応じた追加パラメータ:
+    - **`cde`の場合:**
+      - `mmcodes` (配列):
+        - 各要素はオブジェクトで、`code`（測定コード）、`count`（回数）が含まれる。
+        - 最大 8 個まで指定可能。
+    - **`msg`の場合:**
+      - `message` (文字列): 送信するメッセージ内容。
+    - **`mnu`の場合:**
+      - `menu` (文字列): 送信するメニューの識別子。
+
+#### レスポンス
+
+- **成功時:**
+
+  - **ステータスコード:** `200 OK`
+  - **ヘッダー:** `Content-Type: application/json`
   - **ボディ:** 空の JSON オブジェクト `{}`
 
 - **認証失敗時:**
 
-  - **ステータスコード:** 401 Unauthorized
-  - **ボディ:** 'Unauthorized'
+  - **ステータスコード:** `401 Unauthorized`
+  - **ボディ:** `Unauthorized`
 
-- **コマンド送信失敗時:**
-  - **ステータスコード:** 500 Internal Server Error
-  - **Content-Type:** application/json
-  - **ボディ:** `{'command': 'コマンドの送信に失敗しました。'}`
+- **エラー時:**
+  - **ステータスコード:** `500 Internal Server Error`
+  - **ヘッダー:** `Content-Type: application/json`
+  - **ボディ:**
+    ```json
+    {
+      "command": "コマンドの送信に失敗しました。"
+    }
+    ```
 
-#### フロー
+#### 処理の流れ
 
-1. **認証検証:**
+1. **ユーザーがコマンド送信アクションをトリガー。**
+2. **ブラウザが POST リクエストを`/command`に送信。**
+3. **サーバーがセッション情報を検証。**
+4. **機能コード`fnc`に基づいてデータを整形。**
+   - `cde`の場合:
+     - 測定コードとカウントを連結し、指定フォーマットのデータ文字列を生成。
+   - `msg`の場合:
+     - メニュー値とメッセージ内容を連結。
+   - `mnu`の場合:
+     - メニュー値のみを使用。
+5. **IoT サービス（AWS IoT）を介してデバイスにコマンドを送信。**
+6. **送信結果を受け取り、ブラウザに結果を返却。**
 
-   - セッション情報を抽出し、`verify_auth(request)`を呼び出して認証を検証。
-   - 認証に失敗した場合、401 レスポンスを返却。
+#### リクエストボディの例
 
-2. **コマンド処理:**
+- **測定コード送出 (`cde`):**
 
-   - リクエストボディから`fnc`と`menu`を抽出。
-   - `menu`を 2 文字にゼロ埋め。
+  ```json
+  {
+    "fnc": "cde",
+    "mmcodes": [
+      { "code": "12345", "count": 2 },
+      { "code": "67890", "count": 1 }
+      // 最大8個まで
+    ],
+    "menu": "01"
+  }
+  ```
 
-3. **コマンドデータのフォーマット:**
+- **メッセージ送出 (`msg`):**
 
-   - `fnc`の種類に応じて、`data`を生成。
-     - `'cde'`: `menu`と全ての`mmcodes`を結合。
-     - `'msg'`: `menu`と固定文字列 'HELLO' を結合。
-     - `'mnu'`: `menu`をそのまま使用。
-     - 不明な`fnc`の場合、`data`を空文字に設定。
+  ```json
+  {
+    "fnc": "msg",
+    "menu": "02",
+    "message": "このメッセージを送信します。"
+  }
+  ```
 
-4. **コマンド送信:**
+- **メニュー送出 (`mnu`):**
+  ```json
+  {
+    "fnc": "mnu",
+    "menu": "03"
+  }
+  ```
 
-   - `send_command(device_id, fnc, data, '?')`を呼び出して、AWS IoT の MQTT トピックにコマンドをパブリッシュ。
-
-5. **レスポンス処理:**
-   - コマンド送信に成功した場合、200 レスポンスを返却。
-   - 失敗した場合、エラーメッセージとともに 500 レスポンスを返却。
-
-#### 依存関係
-
-- **Auth Module (`verify_auth`):** リクエストの認証を管理。
-- **IoT Service (`send_command`):** AWS IoT にコマンドをパブリッシュ。
-
-## 静的アセット提供 API
-
-### API 概要
-
-- **メソッド:** GET
-- **パス:** `/assets/{file_path}`
-- **説明:** JavaScript や CSS などの静的アセットファイルを提供します。指定された`file_path`が存在することを確認し、適切なコンテンツタイプでレスポンスを返します。
-
-### Mermaid シーケンス図
-
-```mermaid
-sequenceDiagram
-    participant Client
-    participant API Gateway
-    participant Lambda Function
-    participant File System
-
-    Client->>API Gateway: GET /assets/{file_path}
-    API Gateway->>Lambda Function: Invoke /assets/{file_path} GET handler
-    Lambda Function->>File System: Check and read file_path
-    alt File Exists
-        Lambda Function->>Lambda Function: Determine content_type
-        Lambda Function-->>API Gateway: Response (200, file_content, Content-Type)
-    else File Not Found
-        Lambda Function-->>API Gateway: Response (404, 'File not found')
-    end
-```
-
-### 詳細設計書
-
-#### 目的
-
-静的アセット提供 API は、フロントエンドの JavaScript や CSS ファイル、その他の静的リソースをクライアントに提供します。これにより、ユーザーインターフェースの動的な機能やスタイルがサポートされます。
-
-#### インプット
-
-- **リクエストメソッド:** GET
-- **パスパラメータ:**
-  - **file_path:** 提供するファイルの相対パス。
-
-#### アウトプット
+#### レスポンスボディの例
 
 - **成功時:**
 
-  - **ステータスコード:** 200 OK
-  - **Content-Type:** ファイル拡張子に基づく適切なタイプ（例: `.js` → `application/javascript`）
-  - **ボディ:** リクエストされたファイルのバイナリコンテンツ。
-
-- **失敗時（ファイル未存在）:**
-  - **ステータスコード:** 404 Not Found
-  - **ボディ:** 'File not found'
-
-#### フロー
-
-1. **ファイルパスの解決:**
-
-   - リクエストされた`file_path`とアセットディレクトリを結合して、実際のファイルパスを構築。
-
-2. **ファイルの存在確認:**
-
-   - `os.path.isfile(asset_path)`を使用してファイルの存在を確認。
-
-3. **ファイル提供:**
-
-   - ファイルが存在する場合、バイナリモードでファイルを読み込む。
-   - ファイル拡張子に基づいて`Content-Type`を決定。
-   - 読み込んだファイル内容を適切なヘッダーとともにクライアントに返却。
-
-4. **エラーハンドリング:**
-   - ファイルが存在しない場合、404 ステータスとともにエラーメッセージを返却。
-
-#### 依存関係
-
-- **ファイルシステムアクセス:** アセットディレクトリ内のファイルにアクセス。
-- **OS モジュール:** パス操作やファイル存在確認を行う。
-
-#### パフォーマンスの考慮点
-
-- **キャッシングヘッダーの追加:** クライアント側のキャッシュを有効にするために、`Cache-Control`や`ETag`ヘッダーを追加することを検討。
-- **CDN の活用:** 静的アセットを AWS CloudFront などの CDN 経由で提供することで、パフォーマンスとスケーラビリティを向上。
-
-## メッセージ生成 API
-
-### API 概要
-
-- **メソッド:** POST
-- **パス:** `/message`
-- **説明:** ユーザーのプロンプトに基づいて指定された AI モデル（AWS Bedrock）を使用してメッセージを生成し、生成されたメッセージをメッセージ履歴として保存します。
-
-### Mermaid シーケンス図
-
-```mermaid
-sequenceDiagram
-    participant Client
-    participant API Gateway
-    participant Lambda Function
-    participant Auth Module
-    participant AI Service (Bedrock)
-    participant Message History Repository
-
-    Client->>API Gateway: POST /message (prompt data)
-    API Gateway->>Lambda Function: Invoke /message POST handler
-    Lambda Function->>Auth Module: verify_auth(request)
-    Auth Module-->>Lambda Function: auth_result
-    alt Auth Success
-        Lambda Function->>Lambda Function: Determine AI model based on 'ai' parameter
-        Lambda Function->>AI Service (Bedrock): generate_message(region, model, prompt, msglen)
-        AI Service-->>Lambda Function: generated_message
-        Lambda Function->>Message History Repository: put_message_history_item(device_id, model, prompt, message)
-        Lambda Function-->>Client: Response (200, {'message': message})
-    else Auth Failure
-        Lambda Function-->>Client: Response (401, 'Unauthorized')
-    end
-```
-
-### 詳細設計書
-
-#### 目的
-
-メッセージ生成 API は、ユーザーからのプロンプトを基に指定された AI モデル（AWS Bedrock）を利用してメッセージを生成し、生成されたメッセージを履歴として保存します。これにより、動的なコンテンツ生成とユーザーとのインタラクションの強化を実現します。
-
-#### インプット
-
-- **リクエストメソッド:** POST
-- **パスパラメータ:** なし
-- **ヘッダー:**
-  - **Cookie:** 認証情報を含む。
-- **ボディパラメータ:**
-  - **ai:** 使用する AI モデルを示す文字列（例: 'bedrock/claude3-haiku'）。
-  - **msglen:** 生成されるメッセージの長さを指定する整数。
-  - **prompt:** ユーザーが入力したプロンプト文字列。
-
-#### アウトプット
-
-- **成功時:**
-
-  - **ステータスコード:** 200 OK
-  - **Content-Type:** application/json
-  - **ボディ:** `{'message': generated_message}`
+  ```json
+  {}
+  ```
 
 - **認証失敗時:**
 
-  - **ステータスコード:** 401 Unauthorized
-  - **ボディ:** 'Unauthorized'
+  ```
+  Unauthorized
+  ```
 
-- **AI 生成失敗時:**
-  - **ステータスコード:** 400 Bad Request または 500 Internal Server Error
-  - **Content-Type:** application/json
-  - **ボディ:** `{'message': 'AIのメッセージ生成に失敗しました。'}`
+- **エラー時:**
+  ```json
+  {
+    "command": "コマンドの送信に失敗しました。"
+  }
+  ```
 
-#### フロー
+---
 
-1. **認証検証:**
+## 6. デバイスデータ削除 API (`/device/data/delete`)
 
-   - セッション情報を抽出し、`verify_auth(request)`を呼び出して認証を検証。
-   - 認証に失敗した場合、401 レスポンスを返却。
+### シーケンス図
 
-2. **AI モデル選択:**
+```mermaid
+sequenceDiagram
+    participant ユーザー
+    participant ブラウザ
+    participant サーバー
+    participant DynamoDB
 
-   - リクエストボディから`ai`パラメータを基に使用する AI モデルとリージョンを決定。
+    ユーザー->>ブラウザ: 測定データ削除アクション
+    ブラウザ->>サーバー: POST /device/data/delete (timestamps)
+    サーバー->>サーバー: 認証情報の検証
+    サーバー->>DynamoDB: 指定タイムスタンプのデータ削除
+    DynamoDB-->>サーバー: 削除結果
+    サーバー->>ブラウザ: 削除されたタイムスタンプの返却
+```
 
-3. **メッセージ生成:**
+### 詳細設計
 
-   - `generate_message(region, model, prompt, msglen)`を呼び出して、指定された AI モデルを使用してメッセージを生成。
+#### エンドポイント
 
-4. **メッセージ履歴の保存:**
+- **URL:** `/device/data/delete`
+- **メソッド:** `POST`
+- **目的:** 指定されたデバイスデータのタイムスタンプに基づき、データを削除する。
 
-   - 生成されたメッセージと関連情報（`device_id`, `model`, `prompt`）を`put_message_history_item`を介して DynamoDB に保存。
+#### リクエスト
 
-5. **レスポンス生成:**
+- **ヘッダー:**
 
-   - 生成されたメッセージを含む 200 ステータスのレスポンスをクライアントに返却。
+  - `Content-Type: application/json`
+  - `Cookie: session=...`  
+    ユーザーのセッション情報が含まれています。
 
-6. **エラーハンドリング:**
-   - AI モデルの選択やメッセージ生成に失敗した場合、適切なエラーレスポンスを返却。
+- **ボディ:**
+  - `timestamps` (配列): 削除対象のデバイスデータのタイムスタンプのリスト（整数）。
 
-#### 依存関係
+#### レスポンス
 
-- **Auth Module (`verify_auth`):** リクエストの認証を管理。
-- **AI Service (`generate_message`):** AWS Bedrock を介してメッセージを生成。
-- **Message History Repository (`put_message_history_item`):** 生成されたメッセージを DynamoDB に保存。
+- **成功時:**
+
+  - **ステータスコード:** `200 OK`
+  - **ヘッダー:** `Content-Type: application/json`
+  - **ボディ:**
+    ```json
+    {
+        "deleted_timestamps": [タイムスタンプ1, タイムスタンプ2, ...]
+    }
+    ```
+
+- **認証失敗時:**
+
+  - **ステータスコード:** `401 Unauthorized`
+  - **ボディ:** `Unauthorized`
+
+- **エラー時:**
+  - **ステータスコード:** `500 Internal Server Error`
+  - **ヘッダー:** `Content-Type: application/json`
+  - **ボディ:**
+    ```json
+    {
+        "message": "測定データの削除に失敗しました。",
+        "deleted_timestamps": [削除に成功したタイムスタンプ1, ...]
+    }
+    ```
+
+#### 処理の流れ
+
+1. **ユーザーが測定データの削除アクションをトリガー。**
+2. **ブラウザが POST リクエストを`/device/data/delete`に送信。**
+3. **サーバーがセッション情報を検証。**
+4. **リクエストボディに含まれる`timestamps`を基に、各タイムスタンプのデータを DynamoDB から削除。**
+   - 削除に成功したタイムスタンプを記録。
+5. **削除結果をレスポンスとして返却。**
+   - 全て成功した場合は`deleted_timestamps`に全タイムスタンプを含む。
+   - 一部失敗した場合は`message`とともに成功したタイムスタンプを返却。
+
+#### リクエストボディの例
+
+```json
+{
+  "timestamps": [1682563200, 1682566800, 1682570400]
+}
+```
+
+#### レスポンスボディの例
+
+- **成功時:**
+
+  ```json
+  {
+    "deleted_timestamps": [1682563200, 1682566800, 1682570400]
+  }
+  ```
+
+- **エラー時（部分的に成功）:**
+  ```json
+  {
+    "message": "測定データの削除に失敗しました。",
+    "deleted_timestamps": [1682563200, 1682570400]
+  }
+  ```
+
+---
+
+## 7. 静的ファイル提供 API (`/assets/{file_path}`)
+
+### シーケンス図
+
+```mermaid
+sequenceDiagram
+    participant ユーザー
+    participant ブラウザ
+    participant サーバー
+
+    ユーザー->>ブラウザ: 静的ファイルへのリクエスト（例: /assets/home.js）
+    ブラウザ->>サーバー: GET /assets/home.js
+    サーバー->>サーバー: ファイル存在確認
+    alt ファイル存在
+        サーバー->>サーバー: ファイル内容の読み込み
+        サーバー->>ブラウザ: ファイルコンテンツの返却
+    else ファイル不在
+        サーバー->>ブラウザ: 404 Not Foundの返却
+    end
+```
+
+### 詳細設計
+
+#### エンドポイント
+
+- **URL:** `/assets/{file_path}`
+- **メソッド:** `GET`
+- **目的:** 静的ファイル（JavaScript、CSS など）を提供する。
+
+#### リクエスト
+
+- **パラメータ:**
+  - `file_path` (文字列): 静的ファイルのパス。例: `home.js`, `styles.css`など。
+
+#### レスポンス
+
+- **ファイル存在時:**
+
+  - **ステータスコード:** `200 OK`
+  - **ヘッダー:** 適切な`Content-Type`（例: `application/javascript`, `text/css`）
+  - **ボディ:** ファイルのバイナリデータ。
+
+- **ファイル不在時:**
+  - **ステータスコード:** `404 Not Found`
+  - **ボディ:** `'File not found'`
+
+#### 処理の流れ
+
+1. **ユーザーが静的ファイルへの URL にアクセス。**
+2. **ブラウザが該当ファイルへの`GET`リクエストを送信。**
+3. **サーバーがリクエストされたファイルの存在を確認。**
+   - ファイルが存在する場合:
+     - ファイルの内容を読み込み、適切な`Content-Type`で返却。
+   - ファイルが存在しない場合:
+     - `404 Not Found`を返却。
