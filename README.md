@@ -8,7 +8,7 @@
 
 ## Python, Poetry
 
-### macOS, Linux
+### macOS, Linux (WSL含む)
 
 1. [mise](https://mise.jdx.dev/) をインストール
 2. mise の poetry プラグインをインストール `mise plugin add poetry`
