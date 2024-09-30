@@ -1,4 +1,4 @@
-# API の詳細設計とシーケンス図
+# API 設計とシーケンス図
 
 ## 1. ホームページ表示 API (`/`)
 
@@ -175,12 +175,11 @@ sequenceDiagram
 #### リクエスト
 
 - **ヘッダー:**
-
   - `Cookie: session=...`  
     現在のセッション情報が含まれています。
 
 - **ボディ:**
-  - 特になし。
+  - なし
 
 #### レスポンス
 
@@ -230,7 +229,6 @@ sequenceDiagram
 #### リクエスト
 
 - **ヘッダー:**
-
   - `Content-Type: application/json`
   - `Cookie: session=...`  
     ユーザーのセッション情報が含まれています。
@@ -243,7 +241,6 @@ sequenceDiagram
 #### レスポンス
 
 - **成功時:**
-
   - **ステータスコード:** `200 OK`
   - **ヘッダー:** `Content-Type: application/json`
   - **ボディ:**
@@ -254,7 +251,6 @@ sequenceDiagram
     ```
 
 - **認証失敗時:**
-
   - **ステータスコード:** `401 Unauthorized`
   - **ボディ:** `Unauthorized`
 
@@ -280,7 +276,6 @@ sequenceDiagram
 #### パラメータ詳細
 
 - `ai`:
-
   - 使用可能なモデル例:
     - `bedrock/claude3-haiku`
     - `bedrock/claude3-5-sonnet`
@@ -289,7 +284,6 @@ sequenceDiagram
   - 各モデルには対応する Bedrock の`modelId`と`region`が設定されています。
 
 - `msglen`:
-
   - 希望するメッセージの文字数。
   - Bedrock の`maxTokens`パラメータに影響し、`msglen * 3`トークンが設定されます。
 
@@ -329,7 +323,6 @@ sequenceDiagram
 #### リクエスト
 
 - **ヘッダー:**
-
   - `Content-Type: application/json`
   - `Cookie: session=...`  
     ユーザーのセッション情報が含まれています。
@@ -349,13 +342,11 @@ sequenceDiagram
 #### レスポンス
 
 - **成功時:**
-
   - **ステータスコード:** `200 OK`
   - **ヘッダー:** `Content-Type: application/json`
   - **ボディ:** 空の JSON オブジェクト `{}`
 
 - **認証失敗時:**
-
   - **ステータスコード:** `401 Unauthorized`
   - **ボディ:** `Unauthorized`
 
@@ -418,27 +409,6 @@ sequenceDiagram
   }
   ```
 
-#### レスポンスボディの例
-
-- **成功時:**
-
-  ```json
-  {}
-  ```
-
-- **認証失敗時:**
-
-  ```
-  Unauthorized
-  ```
-
-- **エラー時:**
-  ```json
-  {
-    "command": "コマンドの送信に失敗しました。"
-  }
-  ```
-
 ---
 
 ## 6. デバイスデータ削除 API (`/device/data/delete`)
@@ -471,7 +441,6 @@ sequenceDiagram
 #### リクエスト
 
 - **ヘッダー:**
-
   - `Content-Type: application/json`
   - `Cookie: session=...`  
     ユーザーのセッション情報が含まれています。
@@ -482,7 +451,6 @@ sequenceDiagram
 #### レスポンス
 
 - **成功時:**
-
   - **ステータスコード:** `200 OK`
   - **ヘッダー:** `Content-Type: application/json`
   - **ボディ:**
@@ -493,7 +461,6 @@ sequenceDiagram
     ```
 
 - **認証失敗時:**
-
   - **ステータスコード:** `401 Unauthorized`
   - **ボディ:** `Unauthorized`
 
@@ -584,7 +551,6 @@ sequenceDiagram
 #### レスポンス
 
 - **ファイル存在時:**
-
   - **ステータスコード:** `200 OK`
   - **ヘッダー:** 適切な`Content-Type`（例: `application/javascript`, `text/css`）
   - **ボディ:** ファイルのバイナリデータ。
