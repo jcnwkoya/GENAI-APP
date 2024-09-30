@@ -3,6 +3,7 @@
 ## 設計書
 
 - [API 設計とシーケンス図](./api_spec.md)
+- [API 設計とシーケンス図 PDF 版](./api_spec.pdf)
 
 Visual Studio Code に [Markdown Previe Mermaid Support] を追加してプレビューしてください。
 
