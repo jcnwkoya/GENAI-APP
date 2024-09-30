@@ -1,5 +1,9 @@
 # リテラシステム研究所 生成 AI アプリ
 
+## ドキュメント
+
+[一覧](./docs/README.md)
+
 ## 環境セットアップ
 
 ## Visual Studio Code
