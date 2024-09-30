@@ -19,7 +19,7 @@ def put_message_history_item(device_id, model, words, message):
     table.put_item(
         Item={
             'deviceId': device_id,
-            'timestamp': int(time.time()),
+            'timestamp': int(time.time() * 1000),
             'model': model,
             'words': words,
             'message': message
