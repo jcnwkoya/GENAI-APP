@@ -48,7 +48,6 @@ def post_command():
             message = body.get('message', '')
             data = mnu + message
         elif fnc == "mnu":
-            # メニューを送出
             data = mnu
         else:
             # その他のコマンドのとき
