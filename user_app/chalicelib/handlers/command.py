@@ -46,8 +46,11 @@ def post_command():
         elif fnc == "msg":
             # メッセージを送出
             message = body.get('message', '')
-            data = mnu + message
+            # ハードウェアバッファ容量によりメッセージ長さを70に制限
+            limited_message = message[:70]
+            data = mnu + limited_message
         elif fnc == "mnu":
+            # メニューを送出
             data = mnu
         else:
             # その他のコマンドのとき
