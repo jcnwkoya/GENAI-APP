@@ -278,6 +278,30 @@ function setupFilteringMmDataForm(codeTables, dataItems) {
         return false;
     };
 
+    document.getElementById('importFile').onchange = (evt) => {
+        try {
+            // CSVの入力処理
+            const file = evt.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (re) {
+                    let csvData = re.target.result;
+                    if (csvData.startsWith('SN,')) {
+                        csvData = csvData.replace(/^SN,.+\r?\n/, ''); // SN行を削除
+                    }
+                    const { data, errops, meta } = Papa.parse(csvData, { header: true });
+                    for (const line of data) {
+                        console.info(line);
+                    }
+                };
+                reader.readAsText(file);
+            }
+            console.info(evt.target.files[0].name);
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
     document.getElementById('runDeleteButton').onclick = () => {
         (async () => {
             // ホーム画面の削除ボタン

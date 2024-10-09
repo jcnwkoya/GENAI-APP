@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="assets/select.dataTables.css" />
     <script src="assets/datatables.js"></script>
     <script src="assets/dataTables.select.js"></script>
+    <script src="assets/papaparse.min.js"></script>
     <style>
       .field.textarea.genmsg:not(.min) {
         ---size: 18rem;
@@ -129,6 +130,10 @@
         </table>
         <div>
           <button id="exportButton" class="small-round">ファイルに保存</button>
+          <button class="small-round">
+            <span>ファイルから読み込み</span>
+            <input type="file" id="importFile">
+          </button>
           <button id="deleteButton" data-ui="#dialog-delete" class="small-round">削除</button>
           <dialog id="dialog-delete" class="modal">
             <h5>測定データの削除</h5>
