@@ -68,6 +68,29 @@ def first_device_data_item(device_id):
     return False
 
 
+def put_device_data_item(device_id, timestamp, mm_code, menu, mode):
+    """概要
+    DynamoDBデバイスデータテーブルにアイテムを保存します。
+
+    Args:
+        device_id (string): デバイスID
+        timestamp (int): タイムスタンプ
+        mm_code (string): 測定コード
+        mode (int): モード
+        menu (int): メニュー
+    """
+    response = table.put_item(
+        Item={
+            'deviceId': device_id,
+            'timestamp': timestamp,
+            'mmCode': int(mm_code),  # 先頭0は削除され数値に変換 
+            'menu': menu,
+            'mode': mode,
+        }
+    )
+    return response
+
+
 def delete_device_data_item(device_id, timestamp):
     """概要
     DynamoDBデバイスデータテーブルから指定されたデバイスIDとタイムスタンプのデータを削除します。
