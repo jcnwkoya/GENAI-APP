@@ -19,16 +19,18 @@ def post_login():
     body = parse_qs(req.raw_body.decode('utf-8'))
     device_id = body.get('device_id', [''])[0]
     username = body.get('username', [''])[0]
+    user = body.get('user', [''])[0].zfill(2)  # 先頭0埋め
     # password = body.get('password', [''])[0]
 
     if device_id:
         # 指定されたデバイスIDのデータが1件でも記録されているか確認
-        found = first_device_data_item(device_id)
+        found = first_device_data_item(device_id, user)
         if found:
             # 見つかったらログイン成功としてセッションをセット
             set_cookie_header_value = create_session({
                 'device_id': device_id,
                 'username': username,
+                'user': user,
             })
 
             return Response(

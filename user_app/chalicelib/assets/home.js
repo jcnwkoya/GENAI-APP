@@ -249,7 +249,8 @@ function setupFilteringMmDataForm(codeTables, dataItems) {
             // デバイスIDと名前の先頭行を作成
             const deviceId = document.getElementById('deviceId').textContent;
             const username = document.getElementById('username').textContent;
-            let content = `SN,${deviceId},USER,${username}\r\n`;
+            const user = document.getElementById('user').textContent;
+            let content = `SN,${deviceId},USER,${username},USER_NO,${user}\r\n`;
 
             // ヘッダ行を追加
             const headers = mmDataTable.columns().header().map(d => d.textContent).toArray().slice(1)

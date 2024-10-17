@@ -5,6 +5,7 @@ from logging import getLogger
 from ..auth import verify_auth
 from ..repositories.device_data import (
     delete_device_data_item,
+    get_device_data_item,
     put_device_data_item,
 )
 
@@ -24,8 +25,23 @@ def post_device_data():
     mm_code = body.get("mmCode", "")
     mode = body.get("mode", "")
     menu = body.get("menu", "")
+    overwrite = body.get("overwrite", False)
 
     try:
+        if (not overwrite):
+            # 上書きフラグがオフのときは、同じタイムスタンプのデータが存在するか確認します。
+            found = get_device_data_item(device_id, timestamp)
+            if (found):
+                return Response(
+                    body=json.dumps(
+                        {
+                            "message": "既に同じタイムスタンプのデータが存在します。",
+                        }
+                    ),
+                    status_code=400,
+                    headers={"Content-Type": "application/json"},
+                )
+
         put_device_data_item(device_id, timestamp, mm_code, menu, mode, user)
 
         logger.info(

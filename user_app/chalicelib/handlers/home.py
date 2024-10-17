@@ -18,9 +18,10 @@ def home_page():
 
     device_id = auth_res['device_id']
     username = auth_res['username']
+    user = auth_res['user']
 
     # デバイスIDが該当の測定データのデータベースから全取得
-    items = query_device_data_items(device_id)
+    items = query_device_data_items(device_id, user)
 
     # コード表のロード
     code_tables = create_code_tables(items)
@@ -32,6 +33,7 @@ def home_page():
         'home.html',
         device_id=device_id,
         username=username,
+        user=user,
         items=items,
         code_tables=code_tables,
         msg_types=msg_types
