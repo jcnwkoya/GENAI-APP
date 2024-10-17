@@ -48,7 +48,7 @@ const mmDataTable = new DataTable('#mmDataTable', {
             className: 'dt-head-left dt-body-left',
             render: function(data, type, row) {
               if (type === 'display') {
-                return codeTables.mmCodes[data] || data;
+                return codeTables.mmCodes[data] || 'パーソナルコード';
               }
               return data;
             }
