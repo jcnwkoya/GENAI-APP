@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ja" translate="no">
+  <head>
+    <title>Kazutama-net アプリ / 測定データ</title>
+    {% include "common_header.html" %}
+    <script src="assets/papaparse.min.js"></script>
+  </head>
+  <body class="light">
+    <header>
+      <nav>
+        <h5 class="max center-align">Kazutama-net アプリ / 測定データ</h5>
+      </nav>
+    </header>
+    <main class="responsive" style="max-width: 400px">
+      <div style="margin: 16px 0">
+        <h3 class="small">CSVファイルからインポート</h3>
+      </div>
+      <section>
+        <div class="grid">
+          <div class="s12 m12">
+            <button class="small-round">
+              <span>ファイルを読み込む</span>
+              <input type="file" id="importFile">
+            </button>
+          </div>
+        </div>
+      </section>
+    </main>
+    <script>
+      window.codeTables = {{ code_tables }};
+    </script>
+    <script src="assets/data.js"></script>
+  </body>
+</html>

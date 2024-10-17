@@ -3,7 +3,10 @@ from chalice import Blueprint, Response
 from logging import getLogger
 
 from ..auth import verify_auth
-from ..repositories.device_data import delete_device_data_item, put_device_data_item
+from ..repositories.device_data import (
+    delete_device_data_item,
+    put_device_data_item,
+)
 
 logger = getLogger(__name__)
 
@@ -13,19 +16,17 @@ extra_routes = Blueprint(__name__)
 @extra_routes.route("/device/data", methods=["POST"])
 def post_device_data():
     req = extra_routes.current_request
-    auth_res = verify_auth(req)
-    if not auth_res:
-        return Response(body="Unauthorized", status_code=401)
 
-    device_id = auth_res["device_id"]
     body = req.json_body
+    device_id = body.get("device_id", "")
+    user = body.get("user", "")
     timestamp = body.get("timestamp", 0)
     mm_code = body.get("mmCode", "")
     mode = body.get("mode", "")
     menu = body.get("menu", "")
 
     try:
-        put_device_data_item(device_id, timestamp, mm_code, menu, mode)
+        put_device_data_item(device_id, timestamp, mm_code, menu, mode, user)
 
         logger.info(
             "Succeeded to add device data",
