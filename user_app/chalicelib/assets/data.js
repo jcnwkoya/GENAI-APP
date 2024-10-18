@@ -33,17 +33,15 @@ async function loadCSVFile(content) {
     const { data, errors } = Papa.parse(bodyLines, { header: true });
     const items = [];
     for (const line of data) {
-        const datetime = line["測定日時"];
-        if (!datetime) continue; // 日時がない行はスキップ
+        const timestamp = line["タイムスタンプ"];
+        if (!timestamp) continue; // 日時がない行はスキップ
 
-        const timestamp = new Date(datetime).getTime();
-        const mmCode = line["測定コード"];
         const menu = codeTables.menus[line["測定メニュー"]];
         const mode = codeTables.modes[line["測定モード"]];
         items.unshift({
             deviceId,
-            timestamp,
-            mmCode,
+            timestamp: Number(timestamp),
+            mmCode: line["測定コード"],
             menu,
             mode,
             user,
