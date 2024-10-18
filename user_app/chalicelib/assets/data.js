@@ -63,8 +63,7 @@ function parseFirstLine(firstLine) {
 }
 
 async function postDeviceDataItem(item) {
-    const url = '/device/data';
-    const res = await fetch(url, {
+    const res = await fetch('./device/data', {
         method: 'POST',
         body: JSON.stringify(item),
         headers: {
