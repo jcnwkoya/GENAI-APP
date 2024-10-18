@@ -19,26 +19,26 @@ def post_device_data():
     req = extra_routes.current_request
 
     body = req.json_body
-    device_id = body.get("device_id", "")
-    user = body.get("user", "")
+    device_id = body.get("deviceId", "")
+    user = body.get("user", 0)
     timestamp = body.get("timestamp", 0)
     mm_code = body.get("mmCode", "")
-    mode = body.get("mode", "")
-    menu = body.get("menu", "")
+    mode = body.get("mode", 0)
+    menu = body.get("menu", 0)
     overwrite = body.get("overwrite", False)
 
     try:
         if (not overwrite):
-            # 上書きフラグがオフのときは、同じタイムスタンプのデータが存在するか確認します。
+            # 上書きフラグがオフのときは、同じキーのデータの存在を確認
             found = get_device_data_item(device_id, timestamp)
             if (found):
                 return Response(
                     body=json.dumps(
                         {
-                            "message": "既に同じタイムスタンプのデータが存在します。",
+                            "message": "既に同じデバイス、タイムスタンプのデータが存在します。",
                         }
                     ),
-                    status_code=400,
+                    status_code=409,
                     headers={"Content-Type": "application/json"},
                 )
 

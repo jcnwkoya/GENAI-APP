@@ -22,6 +22,14 @@
               <span>ファイルを読み込む</span>
               <input type="file" id="importFile">
             </button>
+            <dialog id="dialog-overwrite" class="modal">
+              <h5>測定データの上書き</h5>
+              <div>既に同一のデータが存在します。上書き保存してよろしいですか？</div>
+              <nav class="right-align no-space">
+                <button data-ui="#dialog-overwrite" id="cancelImportButton" class="transparent link">キャンセル</button>
+                <button data-ui="#dialog-overwrite" id="continueImportButton">上書き</button>
+              </nav>
+            </dialog>
           </div>
         </div>
       </section>

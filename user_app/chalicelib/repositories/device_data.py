@@ -12,14 +12,14 @@ def query_device_data_items(device_id, user):
 
     Args:
         device_id (string): デバイスID
-        user (string):No.
+        user (int): ユーザーNo.
 
     Returns:
         list: 測定データ項目の配列
     """
     # データベースへ最初の要求
     key_cond = Key('deviceId').eq(device_id)
-    filter_exp = Attr('user').eq(int(user))
+    filter_exp = Attr('user').eq(user)
     response = table.query(
         KeyConditionExpression=key_cond,
         FilterExpression=filter_exp,
@@ -58,13 +58,13 @@ def first_device_data_item(device_id, user):
 
     Args:
         device_id (string): デバイスID
-        user (string): ユーザーNo.
+        user (int): ユーザーNo.
 
     Returns:
         dict|False: 項目、なければFalse
     """
     key_cond = Key('deviceId').eq(device_id)
-    filter_exp = Attr('user').eq(int(user))
+    filter_exp = Attr('user').eq(user)
     response = table.query(
         KeyConditionExpression=key_cond,
         FilterExpression=filter_exp,
@@ -90,7 +90,12 @@ def get_device_data_item(device_id, timestamp):
             'timestamp': timestamp
         }
     )
-    return response
+
+    # レスポンスにItemが含まれているかチェック
+    if 'Item' in response:
+        return response['Item']
+    else:
+        return False
 
 
 def put_device_data_item(device_id, timestamp, mm_code, menu, mode, user):
@@ -101,8 +106,9 @@ def put_device_data_item(device_id, timestamp, mm_code, menu, mode, user):
         device_id (string): デバイスID
         timestamp (int): タイムスタンプ
         mm_code (string): 測定コード
+        menu (int): メニュー
         mode (int): モード
-        user (string): メニュー
+        user (int): ユーザーNo.
     """
     response = table.put_item(
         Item={
@@ -111,7 +117,7 @@ def put_device_data_item(device_id, timestamp, mm_code, menu, mode, user):
             'mmCode': int(mm_code),  # 先頭0は削除され数値に変換
             'menu': menu,
             'mode': mode,
-            'user': int(user),  # 先頭0は削除され数値に変換
+            'user': user,
         }
     )
     return response

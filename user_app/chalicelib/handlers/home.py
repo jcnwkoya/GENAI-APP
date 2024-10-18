@@ -18,7 +18,7 @@ def home_page():
 
     device_id = auth_res['device_id']
     username = auth_res['username']
-    user = auth_res['user']
+    user = int(auth_res['user'])
 
     # デバイスIDが該当の測定データのデータベースから全取得
     items = query_device_data_items(device_id, user)

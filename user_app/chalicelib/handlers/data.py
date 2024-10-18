@@ -56,6 +56,5 @@ def reverse_menus(dict):
     """
     result_dict = {}
     for key, val in dict.items():
-        print(val, key)
         result_dict[val['label']] = key
     return result_dict

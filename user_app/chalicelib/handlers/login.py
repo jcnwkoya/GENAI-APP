@@ -19,7 +19,7 @@ def post_login():
     body = parse_qs(req.raw_body.decode('utf-8'))
     device_id = body.get('device_id', [''])[0]
     username = body.get('username', [''])[0]
-    user = body.get('user', [''])[0].zfill(2)  # 先頭0埋め
+    user = int(body.get('user', ['0'])[0])
     # password = body.get('password', [''])[0]
 
     if device_id:
