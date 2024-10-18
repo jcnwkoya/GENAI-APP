@@ -7,12 +7,20 @@ function setupImportFile() {
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function (re) {
-                    loadCSVFile(re.target.result);
+                    loadCSVFile(re.target.result)
+                        .then(() => {
+                            showAlert('測定データの登録に成功しました', 'info');
+                        })
+                        .catch(err => {
+                            console.error(err);
+                            showAlert(err.message, 'error');
+                        });
                 };
                 reader.readAsText(file);
             }
         } catch (err) {
             console.error(err);
+            showAlert(err.message, 'error');
         }
     };
 }
@@ -71,6 +79,18 @@ async function postDeviceDataItem(item) {
     throw new Error('Failed to post data');
 }
 
+/**
+ * アラートを表示します。
+ */
+function showAlert(message, kind) {
+    document.getElementById('snackbarMsg').textContent = message;
+    if (kind === 'error') {
+        document.getElementById('snackbar').classList.add('error');
+    } else {
+        document.getElementById('snackbar').classList.remove('error');
+    }
+    ui("#snackbar", 3000);
+}
 
 // 画面ロード後の初期化処理
 window.onload = () => {
