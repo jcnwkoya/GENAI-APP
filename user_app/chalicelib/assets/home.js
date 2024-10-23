@@ -254,14 +254,14 @@ function setupFilteringMmDataForm(codeTables, dataItems) {
 
             // ヘッダ行を追加
             const headers = mmDataTable.columns().header().map(d => d.textContent).toArray().slice(1)
-            headers.splice(1, 0, 'タイムスタンプ'); // タイムスタンプを2列目に挿入
+            headers.unshift('タイムスタンプ'); // タイムスタンプを1列目に挿入
             content += headers.join(',') + '\r\n';
 
             // データ行を追加
             mmDataTable.rows().every(function (idx, tableLoop, rowLoop ) {
                 const rawData = this.data();
                 const data = mmDataTable.cells(idx, '').render('display').toArray().slice(1)
-                data.splice(1, 0, rawData['timestamp']); // タイムスタンプを2列目に挿入
+                data.unshift(rawData['timestamp']); // タイムスタンプを1列目に挿入
                 content += data.join(',') + '\r\n';
             });
 
