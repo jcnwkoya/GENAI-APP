@@ -54,8 +54,8 @@ def post_device_data():
             put_device_data_item(
                 device_id, timestamp, item["mmCode"], item["menu"], item["mode"], user
             )
-            extra_routes.logging.info(
-                "Succeeded to add device data",
+            extra_routes.log.info(
+                "Succeeded to save device data",
                 extra={"device_id": device_id, "timestamp": timestamp},
             )
 
@@ -65,7 +65,7 @@ def post_device_data():
             headers={"Content-Type": "application/json"},
         )
     except:
-        extra_routes.log.exception("Failed to put device data")
+        extra_routes.log.exception("Failed to save device data")
         return Response(
             body=json.dumps(
                 {

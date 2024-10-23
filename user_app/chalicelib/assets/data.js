@@ -1,18 +1,35 @@
-
+let csvData; // 読み込んだCSVのデータをダイアログ後に参照するため保持
 function setupImportFile() {
+    // ファイルの読み込み内容のクリア処理
+    const reset = () => {
+        csvData = undefined;
+        const input = document.getElementById('importFile');
+        input.disabled = false;
+        input.value = '';
+    }
+
+    // ファイルを読み込むボタンが押されたときの処理
     document.getElementById('importFile').onchange = (evt) => {
+        evt.target.disabled = true; // 二重処理防止
+
         try {
-            // CSVの入力処理
             const file = evt.target.files[0];
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function (re) {
-                    loadCSVFile(re.target.result)
-                        .then(() => {
-                            showAlert('測定データの登録に成功しました', 'info');
+                    csvData = loadCSVFile(re.target.result);
+                    postDeviceDataItems(csvData)
+                        .then(result => {
+                            if (result) {
+                                showAlert('測定データの登録に成功しました', 'info');
+                                reset();
+                            } else {
+                                ui('#confirmOverwriteDialog');  // 上書き確認ダイアログを表示
+                            }
                         })
                         .catch(err => {
                             console.error(err);
+                            reset();
                             showAlert(err.message, 'error');
                         });
                 };
@@ -20,12 +37,38 @@ function setupImportFile() {
             }
         } catch (err) {
             console.error(err);
+            reset();
             showAlert(err.message, 'error');
         }
     };
+
+    // 上書き確認ダイアログの上書きボタンが押されたときの処理
+    document.getElementById('overwriteImportButton').onclick = (evt) => {
+        try {
+            postDeviceDataItems(csvData, true)
+                .then(() => {
+                    showAlert('測定データの登録に成功しました', 'info');
+                    reset();
+                })
+                .catch(err => {
+                    console.error(err);
+                    reset();
+                    showAlert(err.message, 'error');
+                });
+        } catch (err) {
+            console.error(err);
+            reset();
+            showAlert(err.message, 'error');
+        }
+    };
+
+    // 上書き確認ダイアログのキャンセルボタンが押されたときの処理
+    document.getElementById('cancelImportButton').onclick = (evt) => {
+        reset();
+    };
 }
 
-async function loadCSVFile(content) {
+function loadCSVFile(content) {
     const firstLine = content.split(/\r?\n/)[0];
     const { deviceId, user } = parseFirstLine(firstLine); // 先頭行を解析
 
@@ -49,11 +92,9 @@ async function loadCSVFile(content) {
             mmCode: line["測定コード"],
             menu,
             mode,
-            user,
         }); // 逆順に追加
     }
-
-    await postDeviceDataItems(deviceId, user, items);
+    return { deviceId, user, items };
 }
 
 function parseFirstLine(firstLine) {
@@ -62,20 +103,22 @@ function parseFirstLine(firstLine) {
     return { deviceId, user: Number(user) };
 }
 
-async function postDeviceDataItems(deviceId, user, items) {
+async function postDeviceDataItems(data, overwrite = false) {
+    const { deviceId, user, items } = data;
     const res = await fetch('./device/data', {
         method: 'POST',
-        body: JSON.stringify({ deviceId, user, items }),
+        body: JSON.stringify({ deviceId, user, items, overwrite }),
         headers: {
             'Content-Type': 'application/json',
         },
     });
-    if (res.ok) return true;
-    if (res.status < 500) {
-        const body = await res.json();
-        throw new Error(body.message);
+    if (res.ok) return true; // 成功
+    if (res.status === 409) {
+        return false; // 重複エラーで失敗
     }
-    throw new Error('測定データの登録に失敗しました。');
+
+    const body = await res.json();
+    throw new Error(body.message);
 }
 
 /**
