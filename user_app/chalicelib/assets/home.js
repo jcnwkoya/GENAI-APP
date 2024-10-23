@@ -249,15 +249,19 @@ function setupFilteringMmDataForm(codeTables, dataItems) {
             // デバイスIDと名前の先頭行を作成
             const deviceId = document.getElementById('deviceId').textContent;
             const username = document.getElementById('username').textContent;
-            let content = `SN,${deviceId},USER,${username}\r\n`;
+            const user = document.getElementById('user').textContent;
+            let content = `SN,${deviceId},USER,${username},USER_NO,${user}\r\n`;
 
             // ヘッダ行を追加
             const headers = mmDataTable.columns().header().map(d => d.textContent).toArray().slice(1)
+            headers.splice(1, 0, 'タイムスタンプ'); // タイムスタンプを2列目に挿入
             content += headers.join(',') + '\r\n';
 
             // データ行を追加
             mmDataTable.rows().every(function (idx, tableLoop, rowLoop ) {
+                const rawData = this.data();
                 const data = mmDataTable.cells(idx, '').render('display').toArray().slice(1)
+                data.splice(1, 0, rawData['timestamp']); // タイムスタンプを2列目に挿入
                 content += data.join(',') + '\r\n';
             });
 

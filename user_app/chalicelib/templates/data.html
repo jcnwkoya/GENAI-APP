@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ja" translate="no">
+  <head>
+    <title>Kazutama-net アプリ / 測定データ</title>
+    {% include "common_header.html" %}
+    <script src="assets/papaparse.min.js"></script>
+  </head>
+  <body class="light">
+    <div id="snackbar" class="snackbar top">
+      <span id="snackbarMsg"></span>
+    </div>
+    <header>
+      <nav>
+        <h5 class="max center-align">Kazutama-net アプリ / 測定データ</h5>
+      </nav>
+    </header>
+    <main class="responsive" style="max-width: 400px">
+      <div style="margin: 16px 0">
+        <h3 class="small">CSVファイルからインポート</h3>
+      </div>
+      <section>
+        <div class="grid">
+          <div class="s12 m12">
+            <button class="small-round">
+              <span>ファイルを読み込む</span>
+              <input type="file" id="importFile">
+            </button>
+            <dialog id="confirmOverwriteDialog" class="modal">
+              <h5>測定データの上書き</h5>
+              <div>データベース内で登録するデータと同一タイムスタンプであるものが存在します。上書きで登録しますか？</div>
+              <nav class="right-align no-space">
+                <button data-ui="#confirmOverwriteDialog" id="cancelImportButton" class="transparent link">キャンセル</button>
+                <button data-ui="#confirmOverwriteDialog" id="overwriteImportButton">上書き登録</button>
+              </nav>
+            </dialog>
+          </div>
+        </div>
+      </section>
+      <hr class="large">
+      <section>
+        <div class="grid">
+          <div class="s12 m12">
+            <form action="./login" method="GET">
+              <button type="submit" class="border small-round">ログイン画面へ</button>
+            </form>
+          </div>
+        </div>
+      </section>
+    </main>
+    <script>
+      window.codeTables = {{ code_tables }};
+    </script>
+    <script src="assets/data.js"></script>
+  </body>
+</html>
