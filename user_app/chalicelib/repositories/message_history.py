@@ -6,14 +6,14 @@ dynamodb = boto3.resource('dynamodb')
 table = dynamodb.Table(aws_resource('genai-message-history'))
 
 
-def put_message_history_item(device_id, model, words, message):
+def put_message_history_item(device_id, model, prompt, message):
     """概要
     DynamoDBメッセージ履歴テーブルにアイテムを追加します。
 
     Args:
         device_id (string): デバイスID
         model (string): LLMのモデルID
-        words (list): 測定コードの日本語名の配列
+        prompt (string): プロンプト
         message (string): メッセージ
     """
     table.put_item(
@@ -21,7 +21,7 @@ def put_message_history_item(device_id, model, words, message):
             'deviceId': device_id,
             'timestamp': int(time.time() * 1000),
             'model': model,
-            'words': words,
+            'prompt': prompt,
             'message': message
         }
     )
