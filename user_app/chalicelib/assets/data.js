@@ -32,14 +32,19 @@ async function loadCSVFile(content) {
     const bodyLines = content.replace(/^.+\r?\n/, ''); // 先頭行を削除
     const { data, errors } = Papa.parse(bodyLines, { header: true });
     const items = [];
+    const tsSet = new Set();
     for (const line of data) {
         const timestamp = line["タイムスタンプ"];
         if (!timestamp) continue; // 日時がない行はスキップ
 
+        if (tsSet.has(timestamp)) {
+            throw new Error('ファイル内に同一タイムスタンプのデータが存在します。');
+        }
+        tsSet.add(timestamp);
+
         const menu = codeTables.menus[line["測定メニュー"]];
         const mode = codeTables.modes[line["測定モード"]];
         items.unshift({
-            deviceId,
             timestamp: Number(timestamp),
             mmCode: line["測定コード"],
             menu,
@@ -48,10 +53,7 @@ async function loadCSVFile(content) {
         }); // 逆順に追加
     }
 
-    // 1件ずつ登録処理
-    for (const item of items) {
-        await postDeviceDataItem(item);
-    }
+    await postDeviceDataItems(deviceId, user, items);
 }
 
 function parseFirstLine(firstLine) {
@@ -60,10 +62,10 @@ function parseFirstLine(firstLine) {
     return { deviceId, user: Number(user) };
 }
 
-async function postDeviceDataItem(item) {
+async function postDeviceDataItems(deviceId, user, items) {
     const res = await fetch('./device/data', {
         method: 'POST',
-        body: JSON.stringify(item),
+        body: JSON.stringify({ deviceId, user, items }),
         headers: {
             'Content-Type': 'application/json',
         },
@@ -73,7 +75,7 @@ async function postDeviceDataItem(item) {
         const body = await res.json();
         throw new Error(body.message);
     }
-    throw new Error('Failed to post data');
+    throw new Error('測定データの登録に失敗しました。');
 }
 
 /**
