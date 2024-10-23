@@ -1,12 +1,9 @@
 import json
 from chalice import Blueprint, Response
-from logging import getLogger
 
 from ..ai_services.bedrock import generate_message
 from ..auth import verify_auth
 from ..repositories.message_history import put_message_history_item
-
-logger = getLogger(__name__)
 
 extra_routes = Blueprint(__name__)
 
@@ -48,7 +45,7 @@ def post_message():
             )
 
         message = generate_message(region, model, prompt, msglen)
-        logger.info('Succeeded to generate message', {
+        extra_routes.log.info('Succeeded to generate message', {
             'device_id': device_id,
             'prompt': prompt,
             'message': message
@@ -62,8 +59,8 @@ def post_message():
             status_code=200,
             headers={'Content-Type': 'application/json'}
         )
-    except Exception as e:
-        logger.error(e)
+    except:
+        extra_routes.log.exception('Failed to generate message')
         return Response(
             body=json.dumps({'message': 'AIのメッセージ生成に失敗しました。'}),
             status_code=500,

@@ -1,11 +1,8 @@
 import json
 from chalice import Blueprint, Response
-from logging import getLogger
 
 from ..auth import verify_auth
 from ..services.iot import send_command
-
-logger = getLogger(__name__)
 
 extra_routes = Blueprint(__name__)
 
@@ -57,7 +54,7 @@ def post_command():
             data = ""
 
         send_command(device_id, fnc, data, "?")
-        logger.info(
+        extra_routes.log.info(
             "Succeeded to send command",
             {"device_id": device_id, "fnc": fnc, "data": data},
         )
@@ -67,8 +64,8 @@ def post_command():
             status_code=200,
             headers={"Content-Type": "application/json"},
         )
-    except Exception as e:
-        logger.error(e)
+    except:
+        extra_routes.log.exception('Failed to send command')
         return Response(
             body=json.dumps({"command": "コマンドの送信に失敗しました。"}),
             status_code=500,

@@ -1,10 +1,7 @@
 from chalice import Blueprint, Response
-from logging import getLogger
 
 from ..data import load_menus, load_modes
 from ..template import render_template
-
-logger = getLogger(__name__)
 
 extra_routes = Blueprint(__name__)
 

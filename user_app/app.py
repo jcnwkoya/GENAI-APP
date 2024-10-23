@@ -1,3 +1,4 @@
+import logging
 from chalice import Chalice
 from chalicelib.handlers.asset import extra_routes as asset
 from chalicelib.handlers.home import extra_routes as home
@@ -9,6 +10,7 @@ from chalicelib.handlers.data import extra_routes as data
 from chalicelib.util import app_name
 
 app = Chalice(app_name=app_name())
+app.log.setLevel(logging.INFO)
 
 app.register_blueprint(asset)
 app.register_blueprint(home)
