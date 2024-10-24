@@ -52,22 +52,19 @@ def query_device_data_items(device_id, user):
     return results
 
 
-def first_device_data_item(device_id, user):
+def first_device_data_item(device_id):
     """概要
     DynamoDBデバイスデータテーブルから指定されたデバイスIDの先頭のデータ1件を取得します。
 
     Args:
         device_id (string): デバイスID
-        user (int): ユーザーNo.
 
     Returns:
         dict|False: 項目、なければFalse
     """
     key_cond = Key('deviceId').eq(device_id)
-    filter_exp = Attr('user').eq(user)
     response = table.query(
         KeyConditionExpression=key_cond,
-        FilterExpression=filter_exp,
         Limit=1
     )
     items = response['Items']

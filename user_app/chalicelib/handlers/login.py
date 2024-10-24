@@ -21,7 +21,7 @@ def post_login():
 
     if device_id:
         # 指定されたデバイスIDのデータが1件でも記録されているか確認
-        found = first_device_data_item(device_id, user)
+        found = first_device_data_item(device_id)
         if found:
             # 見つかったらログイン成功としてセッションをセット
             set_cookie_header_value = create_session({
