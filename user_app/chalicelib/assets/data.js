@@ -1,8 +1,8 @@
-let csvData; // 読み込んだCSVのデータをダイアログ後に参照するため保持
+let importData; // 登録するデータをダイアログ後に参照するため保持
 function setupImportFile() {
     // ファイルの読み込み内容のクリア処理
     const reset = () => {
-        csvData = undefined;
+        importData = undefined;
         const input = document.getElementById('importFile');
         input.disabled = false;
         input.value = '';
@@ -10,56 +10,50 @@ function setupImportFile() {
 
     // ファイルを読み込むボタンが押されたときの処理
     document.getElementById('importFile').onchange = (evt) => {
-        evt.target.disabled = true; // 二重処理防止
+        const file = evt.target.files[0];
+        if (!file) return;
 
-        try {
-            const file = evt.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function (re) {
-                    csvData = loadCSVFile(re.target.result);
-                    postDeviceDataItems(csvData)
-                        .then(result => {
-                            if (result) {
-                                showAlert('測定データの登録に成功しました', 'info');
-                                reset();
-                            } else {
-                                ui('#confirmOverwriteDialog');  // 上書き確認ダイアログを表示
-                            }
-                        })
-                        .catch(err => {
-                            console.error(err);
-                            reset();
-                            showAlert(err.message, 'error');
-                        });
-                };
-                reader.readAsText(file);
+        (async () => {
+            evt.target.disabled = true; // 二重処理防止
+
+            try {
+                const deviceId = document.getElementById('deviceIdInput').value;
+                if (!deviceId) throw new Error('端末IDを入力してください');
+
+                const user = Number(document.getElementById('userInput').value);
+                if (isNaN(user)) throw new Error('ユーザー No.を入力してください');
+
+                const textContent = await readFileAsText(file);
+                const items = loadCSVFile(textContent);
+                importData = { deviceId, user, items };
+                const result = await postDeviceDataItems(importData);
+                if (result) {
+                    showAlert('測定データの登録に成功しました', 'info');
+                    reset();
+                } else {
+                    ui('#confirmOverwriteDialog');  // 上書き確認ダイアログを表示
+                }
+            } catch (err) {
+                console.error(err);
+                reset();
+                showAlert(err.message, 'error');
             }
-        } catch (err) {
-            console.error(err);
-            reset();
-            showAlert(err.message, 'error');
-        }
+        })();
     };
 
     // 上書き確認ダイアログの上書きボタンが押されたときの処理
     document.getElementById('overwriteImportButton').onclick = (evt) => {
-        try {
-            postDeviceDataItems(csvData, true)
-                .then(() => {
-                    showAlert('測定データの登録に成功しました', 'info');
-                    reset();
-                })
-                .catch(err => {
-                    console.error(err);
-                    reset();
-                    showAlert(err.message, 'error');
-                });
-        } catch (err) {
-            console.error(err);
-            reset();
-            showAlert(err.message, 'error');
-        }
+        (async () => {
+            try {
+                await postDeviceDataItems(importData, true);
+                showAlert('測定データの登録に成功しました', 'info');
+            } catch (err) {
+                console.error(err);
+                showAlert(err.message, 'error');
+            } finally {
+                reset();
+            }
+        })();
     };
 
     // 上書き確認ダイアログのキャンセルボタンが押されたときの処理
@@ -68,39 +62,47 @@ function setupImportFile() {
     };
 }
 
-function loadCSVFile(content) {
-    const firstLine = content.split(/\r?\n/)[0];
-    const { deviceId, user } = parseFirstLine(firstLine); // 先頭行を解析
+/**
+ * テキストファイルを読み込んで、内容を全体を文字列として返します。
+ */
+async function readFileAsText(file) {
+    return await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = function (re) {
+            resolve(re.target.result);
+        };
+        reader.onerror = function (err) {
+            reject(err);
+        };
+        reader.readAsText(file);
+    });
+}
 
-    const bodyLines = content.replace(/^.+\r?\n/, ''); // 先頭行を削除
-    const { data, errors } = Papa.parse(bodyLines, { header: true });
+/**
+ * 文字列をCSVとして解析して、
+ * 行のセルをタイムスタンプ,メニュー,モード,測定コードとして
+ * 登録データの配列を返します。
+ */
+function loadCSVFile(content) {
+    const { data } = Papa.parse(content, { skipEmptyLines: true });
     const items = [];
     const tsSet = new Set();
     for (const line of data) {
-        const timestamp = line["タイムスタンプ"];
-        if (!timestamp) continue; // 日時がない行はスキップ
+        const [timestamp, menu, mode, mmCode] = line;
 
         if (tsSet.has(timestamp)) {
             throw new Error('ファイル内に同一タイムスタンプのデータが存在します。');
         }
         tsSet.add(timestamp);
 
-        const menu = codeTables.menus[line["測定メニュー"]];
-        const mode = codeTables.modes[line["測定モード"]];
-        items.unshift({
+        items.push({
             timestamp: Number(timestamp),
-            mmCode: line["測定コード"],
-            menu,
-            mode,
-        }); // 逆順に追加
+            mmCode,
+            menu: codeTables.menus[menu],
+            mode: codeTables.modes[mode],
+        });
     }
-    return { deviceId, user, items };
-}
-
-function parseFirstLine(firstLine) {
-    const { data } = Papa.parse(firstLine);
-    const [, deviceId, , , , user] = data[0];
-    return { deviceId, user: Number(user) };
+    return items;
 }
 
 async function postDeviceDataItems(data, overwrite = false) {
