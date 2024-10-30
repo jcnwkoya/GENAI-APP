@@ -60,6 +60,9 @@ const mmDataTable = new DataTable('#mmDataTable', {
     scrollX: true,
     scrollY: 300,
     searching: false,
+    language: {
+        emptyTable: '端末IDのユーザーNo.に該当する測定データはありません。',
+    }
 });
 
 /**
