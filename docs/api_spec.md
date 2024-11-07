@@ -568,3 +568,139 @@ sequenceDiagram
      - ファイルの内容を読み込み、適切な`Content-Type`で返却。
    - ファイルが存在しない場合:
      - `404 Not Found`を返却。
+
+---
+
+## 8. データ表示 API (`/data`)
+
+### シーケンス図
+
+```mermaid
+sequenceDiagram
+    participant ユーザー
+    participant ブラウザ
+    participant サーバー
+
+    ユーザー->>ブラウザ: データページへのリクエスト
+    ブラウザ->>サーバー: GET /data
+    サーバー->>サーバー: コード表のロード
+    サーバー->>ブラウザ: データページHTMLの返却
+```
+
+### 詳細設計
+
+#### エンドポイント
+
+- **URL:** `/data`
+- **メソッド:** `GET`
+- **目的:** データ入力・編集用のページを表示する。
+
+#### リクエスト
+
+- 特になし
+
+#### レスポンス
+
+- **ステータスコード:** `200 OK`
+- **ヘッダー:** `Content-Type: text/html; charset=utf-8`
+- **ボディ:** `data.html`テンプレートにレンダリングされた HTML
+
+#### 処理の流れ
+
+1. **ユーザーがデータページにアクセス。**
+2. **サーバーがコード表（メニュー、モード）をロード。**
+   - メニューコードとラベルの対応を反転。
+   - モードコードと名称の対応を反転。
+3. **取得したデータを`data.html`テンプレートに埋め込み、HTML を生成。**
+4. **ブラウザに HTML を返却。**
+
+---
+
+## 9. デバイスデータ登録 API (`/device/data`)
+
+### シーケンス図
+
+```mermaid
+sequenceDiagram
+    participant ユーザー
+    participant ブラウザ
+    participant サーバー
+    participant DynamoDB
+
+    ユーザー->>ブラウザ: データ登録フォーム入力
+    ブラウザ->>サーバー: POST /device/data (deviceId, user, items)
+    サーバー->>DynamoDB: 既存データの確認
+    DynamoDB-->>サーバー: 既存データ
+    alt 上書きフラグなしで重複あり
+        サーバー->>ブラウザ: 409 Conflict
+    else データ登録可能
+        サーバー->>DynamoDB: データ登録
+        サーバー->>ブラウザ: 登録完了レスポンス
+    end
+```
+
+### 詳細設計
+
+#### エンドポイント
+
+- **URL:** `/device/data`
+- **メソッド:** `POST`
+- **目的:** デバイスの測定データを登録する。
+
+#### リクエスト
+
+- **ヘッダー:** `Content-Type: application/json`
+
+- **ボディ:**
+  ```json
+  {
+    "deviceId": "デバイスID",
+    "user": 1,
+    "items": [
+      {
+        "timestamp": 1234567890,
+        "mmCode": "12345",
+        "menu": 1,
+        "mode": 1
+      }
+    ],
+    "overwrite": false
+  }
+  ```
+
+#### レスポンス
+
+- **成功時:**
+  - **ステータスコード:** `200 OK`
+  - **ヘッダー:** `Content-Type: application/json`
+  - **ボディ:** 空の JSON オブジェクト `{}`
+
+- **重複エラー時:**
+  - **ステータスコード:** `409 Conflict`
+  - **ヘッダー:** `Content-Type: application/json`
+  - **ボディ:**
+    ```json
+    {
+      "message": "データベース内に同一タイムスタンプのデータが存在します。"
+    }
+    ```
+
+- **その他エラー時:**
+  - **ステータスコード:** `500 Internal Server Error`
+  - **ヘッダー:** `Content-Type: application/json`
+  - **ボディ:**
+    ```json
+    {
+      "message": "測定データの追加に失敗しました。"
+    }
+    ```
+
+#### 処理の流れ
+
+1. **ユーザーがデータ登録フォームに入力。**
+2. **ブラウザが POST リクエストを`/device/data`に送信。**
+3. **サーバーが既存データを確認。**
+   - 上書きフラグがオフで重複がある場合:
+     - `409 Conflict`を返却。
+   - それ以外の場合:
+     - データを登録し、成功レスポンスを返却。

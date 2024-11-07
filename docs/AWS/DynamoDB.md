@@ -13,6 +13,7 @@ IoT デバイスからのデータを保存するテーブルです。
 | menu                           | number | 1~18 までの数値                                     |
 | mmCode                         | string | 5 桁の数値（先頭の 0 を省略させないため string 型） |
 | mode                           | number | 0: エーテル / 1: アストラル                         |
+| user                           | number | ユーザー No.                                  |
 
 ### DynamoDB に保存されるデータの例
 
