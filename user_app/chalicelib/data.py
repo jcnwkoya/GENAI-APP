@@ -45,8 +45,13 @@ def load_mm_codes():
     """
     if 'mm_code' in cached_data:
         return cached_data['mm_code']
-
-    file_path = os.path.join(data_dir, 'mm_code.tsv')
+    
+    if 'menu' == 19:    #　暫定変更：動作には関係なし
+        file_path = os.path.join(data_dir, 'mb_code.tsv')
+    elif 'menu' == 20:
+        file_path = os.path.join(data_dir, 'md_code.tsv')
+    else:   
+        file_path = os.path.join(data_dir, 'mm_code.tsv')
     data_dict = {}
 
     with open(file_path, 'r', encoding='utf-8') as file:
