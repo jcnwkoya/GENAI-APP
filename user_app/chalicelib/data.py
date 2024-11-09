@@ -46,12 +46,7 @@ def load_mm_codes():
     if 'mm_code' in cached_data:
         return cached_data['mm_code']
     
-    if 'menu' == 19:    #　暫定変更：動作には関係なし
-        file_path = os.path.join(data_dir, 'mb_code.tsv')
-    elif 'menu' == 20:
-        file_path = os.path.join(data_dir, 'md_code.tsv')
-    else:   
-        file_path = os.path.join(data_dir, 'mm_code.tsv')
+    file_path = os.path.join(data_dir, 'mm_code.tsv')
     data_dict = {}
 
     with open(file_path, 'r', encoding='utf-8') as file:
@@ -66,6 +61,31 @@ def load_mm_codes():
     cached_data['mm_code'] = data_dict
     return data_dict
 
+def load_mk_codes():
+    """概要
+    data/mk_code.tsv から測定コードデータを読み込み、測定コードの情報を辞書型で返します。
+    同一のLambdaインスタンス内では初回にキャッシュして以降はそのデータを返します。
+
+    Returns:
+        Dictionary: 測定コードの5桁の数値文字列がキー、名称が値の辞書
+    """
+    if 'mm_code' in cached_data:
+        return cached_data['mm_code']
+    
+    file_path = os.path.join(data_dir, 'mk_code.tsv')
+    data_dict = {}
+
+    with open(file_path, 'r', encoding='utf-8') as file:
+        tsv_reader = csv.reader(file, delimiter='\t')
+
+        for row in tsv_reader:
+            if len(row) >= 2:  # 少なくとも2列あることを確認
+                key = str(row[0]).zfill(5)  # 先頭0埋め
+                value = row[1]
+                data_dict[key] = value
+
+    cached_data['mm_code'] = data_dict
+    return data_dict
 
 def load_modes():
     """概要

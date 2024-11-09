@@ -1,7 +1,7 @@
 from chalice import Blueprint, Response
 
 from ..auth import verify_auth, redirect_to_login
-from ..data import load_menus, load_mm_codes, load_modes
+from ..data import load_menus, load_mm_codes, load_mk_codes, load_modes
 from ..repositories.device_data import query_device_data_items
 from ..repositories.message_type import all_message_type_items
 from ..template import render_template
@@ -61,7 +61,10 @@ def create_code_tables(items):
         menu_map[item['menu']] = True
         mode_map[item['mode']] = True
 
-    mm_codes = filter_dict(load_mm_codes(), mm_code_map)
+    if "menu" == "貴方のメンタル":
+        mm_codes = filter_dict(load_mk_codes(), mm_code_map)
+    else:
+        mm_codes = filter_dict(load_mm_codes(), mm_code_map)    
     menus = filter_dict(load_menus(), menu_map)
     modes = filter_dict(load_modes(), mode_map)
     return {
