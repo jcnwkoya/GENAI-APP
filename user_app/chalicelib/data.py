@@ -63,7 +63,7 @@ def load_mm_codes():
 
 def load_mk_codes():
     """概要
-    data/mk_code.tsv から測定コードデータを読み込み、測定コードの情報を辞書型で返します。
+    data/mk_code.tsv から感情コードデータを読み込み、測定コードの情報を辞書型で返します。
     同一のLambdaインスタンス内では初回にキャッシュして以降はそのデータを返します。
 
     Returns:
@@ -73,6 +73,58 @@ def load_mk_codes():
         return cached_data['mm_code']
     
     file_path = os.path.join(data_dir, 'mk_code.tsv')
+    data_dict = {}
+
+    with open(file_path, 'r', encoding='utf-8') as file:
+        tsv_reader = csv.reader(file, delimiter='\t')
+
+        for row in tsv_reader:
+            if len(row) >= 2:  # 少なくとも2列あることを確認
+                key = str(row[0]).zfill(5)  # 先頭0埋め
+                value = row[1]
+                data_dict[key] = value
+
+    cached_data['mm_code'] = data_dict
+    return data_dict
+
+def load_md_codes():
+    """概要
+    data/md_code.tsv から毒素コードデータを読み込み、測定コードの情報を辞書型で返します。
+    同一のLambdaインスタンス内では初回にキャッシュして以降はそのデータを返します。
+
+    Returns:
+        Dictionary: 測定コードの5桁の数値文字列がキー、名称が値の辞書
+    """
+    if 'mm_code' in cached_data:
+        return cached_data['mm_code']
+    
+    file_path = os.path.join(data_dir, 'md_code.tsv')
+    data_dict = {}
+
+    with open(file_path, 'r', encoding='utf-8') as file:
+        tsv_reader = csv.reader(file, delimiter='\t')
+
+        for row in tsv_reader:
+            if len(row) >= 2:  # 少なくとも2列あることを確認
+                key = str(row[0]).zfill(5)  # 先頭0埋め
+                value = row[1]
+                data_dict[key] = value
+
+    cached_data['mm_code'] = data_dict
+    return data_dict
+
+def load_mb_codes():
+    """概要
+    data/mb_code.tsv から身体部位コードデータを読み込み、測定コードの情報を辞書型で返します。
+    同一のLambdaインスタンス内では初回にキャッシュして以降はそのデータを返します。
+
+    Returns:
+        Dictionary: 測定コードの5桁の数値文字列がキー、名称が値の辞書
+    """
+    if 'mm_code' in cached_data:
+        return cached_data['mm_code']
+    
+    file_path = os.path.join(data_dir, 'mb_code.tsv')
     data_dict = {}
 
     with open(file_path, 'r', encoding='utf-8') as file:
