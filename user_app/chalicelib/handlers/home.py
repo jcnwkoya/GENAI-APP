@@ -61,7 +61,7 @@ def create_code_tables(items):
         menu_map[item['menu']] = True
         mode_map[item['mode']] = True
 
-    if items[0]['menu'] >= 1 and items[0]['menu'] <= 18 or items[0]['menu'] == 21:
+    if items[0]['menu'] >= 1 and items[0]['menu'] <= 18:
         mm_codes = filter_dict(load_mk_codes(), mm_code_map)
     elif items[0]['menu'] == 19:
         mm_codes = filter_dict(load_mb_codes(), mm_code_map)

@@ -88,15 +88,15 @@ function loadCSVFile(content) {
     const items = [];
     const tsSet = new Set();
     for (const line of data) {
-        const [timestamp, menu, mode, mmCode] = line;
+        const [timestamp , menu, mode, mmCode] = line;
 
-        if (tsSet.has(timestamp)) {
+        if (tsSet.has(timestamp * 1000)) {
             throw new Error('ファイル内に同一タイムスタンプのデータが存在します。');
         }
-        tsSet.add(timestamp);
+        tsSet.add(timestamp * 1000);
 
         items.push({
-            timestamp: Number(timestamp),
+            timestamp: Number(timestamp * 1000),
             mmCode,
             menu: codeTables.menus[menu],
             mode: codeTables.modes[mode],
