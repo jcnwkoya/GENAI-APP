@@ -64,12 +64,12 @@ def create_code_tables(items):
     if items[0]['menu'] >= 1 and items[0]['menu'] <= 18:
         mm_codes = filter_dict(load_mk_codes(), mm_code_map)
     elif items[0]['menu'] == 19:
-        mm_codes = filter_dict(load_mb_codes(), mm_code_map)
+        mm_codes = filter_dict(load_mm_codes(), mm_code_map)
     elif items[0]['menu'] == 20:
-        mm_codes = filter_dict(load_md_codes(), mm_code_map)
+        mm_codes = filter_dict(load_mm_codes(), mm_code_map)
     else:
         mm_codes = filter_dict(load_mm_codes(), mm_code_map)
-
+    
     menus = filter_dict(load_menus(), menu_map)
     modes = filter_dict(load_modes(), mode_map)
     return {
